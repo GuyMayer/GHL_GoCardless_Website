@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHL GoCardless — Direct Debit for GoHighLevel</title>
+    <meta name="description" content="Add GoCardless Direct Debit payments to GoHighLevel. Check mandates, collect payments, and automate billing — all from inside GHL.">
+    <meta name="keywords" content="GoHighLevel Direct Debit, GoCardless GHL integration, BACS payments, SEPA payments, recurring billing, CRM payments">
+    <meta name="author" content="Zoom Photography">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://dd.ghl-sidekick.com/">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dd.ghl-sidekick.com/">
+    <meta property="og:title" content="GHL GoCardless — Direct Debit for GoHighLevel">
+    <meta property="og:description" content="Add GoCardless Direct Debit payments to GoHighLevel. Check mandates, collect payments, and automate billing.">
+    <meta property="og:image" content="https://dd.ghl-sidekick.com/images/hero-dashboard.png">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://dd.ghl-sidekick.com/">
+    <meta name="twitter:title" content="GHL GoCardless — Direct Debit for GoHighLevel">
+    <meta name="twitter:description" content="Add GoCardless Direct Debit payments to GoHighLevel. Check mandates, collect payments, and automate billing.">
+    <meta name="twitter:image" content="https://dd.ghl-sidekick.com/images/hero-dashboard.png">
+    
+    <!-- JSON-LD Schema -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebSite",
+                "@id": "https://dd.ghl-sidekick.com/#website",
+                "url": "https://dd.ghl-sidekick.com/",
+                "name": "GHL GoCardless",
+                "description": "Direct Debit integration for GoHighLevel",
+                "publisher": {
+                    "@id": "https://dd.ghl-sidekick.com/#organization"
+                }
+            },
+            {
+                "@type": "Organization",
+                "@id": "https://dd.ghl-sidekick.com/#organization",
+                "name": "Zoom Photography",
+                "url": "https://dd.ghl-sidekick.com/",
+                "contactPoint": {
+                    "@type": "ContactPoint",
+                    "contactType": "customer support",
+                    "email": "guy@zoom-photo.uk"
+                }
+            },
+            {
+                "@type": "SoftwareApplication",
+                "@id": "https://dd.ghl-sidekick.com/#software",
+                "name": "GHL GoCardless",
+                "applicationCategory": "BusinessApplication",
+                "applicationSubCategory": "Payment Processing",
+                "description": "GoCardless Direct Debit integration for GoHighLevel CRM. Check mandates, send billing requests, collect payments, and set up instalment plans.",
+                "url": "https://dd.ghl-sidekick.com/",
+                "softwareVersion": "1.0.0",
+                "author": {
+                    "@id": "https://dd.ghl-sidekick.com/#organization"
+                },
+                "offers": {
+                    "@type": "Offer",
+                    "price": "49",
+                    "priceCurrency": "GBP",
+                    "priceValidUntil": "2027-12-31",
+                    "availability": "https://schema.org/InStock"
+                },
+                "featureList": [
+                    "Check customer Direct Debit mandate status",
+                    "Send billing request links via email or SMS",
+                    "Collect one-off payments from existing mandates",
+                    "Create instalment payment plans",
+                    "Automatic payment sync to GHL invoices",
+                    "Webhook integration for real-time updates"
+                ]
+            },
+            {
+                "@type": "FAQPage",
+                "@id": "https://dd.ghl-sidekick.com/#faq",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": "What is GHL GoCardless?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "GHL GoCardless is a GoHighLevel Marketplace app that integrates GoCardless Direct Debit payments into your GHL account, allowing you to check mandates, collect payments, and automate billing."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Which payment methods are supported?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "GoCardless supports UK BACS Direct Debit, SEPA (Euro) Direct Debit, and US ACH bank transfers."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Do I need a GoCardless account?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "Yes, you need a GoCardless account to use this integration. You can start with a free sandbox account for testing, then switch to live for production."
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#1a1a2e',
+                            mid: '#16213e',
+                            accent: '#00b4d8',
+                            light: '#48cae4',
+                            text: '#e0e0e0',
+                        },
+                        gc: {
+                            blue: '#00b4d8',
+                            dark: '#0077b6',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+        .gradient-accent { background: linear-gradient(135deg, #00b4d8 0%, #48cae4 100%); }
+        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0, 180, 216, 0.15); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00b4d8 0%, #48cae4 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 180, 216, 0.4);
+        }
+        .btn-secondary {
+            border: 2px solid #00b4d8;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: rgba(0, 180, 216, 0.1);
+            transform: translateY(-2px);
+        }
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .step-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="bg-brand-dark text-brand-text">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-brand-dark/90 backdrop-blur-md border-b border-white/5">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg gradient-accent flex items-center justify-center text-white font-bold text-sm">GC</div>
+                <span class="text-white font-semibold text-lg">GHL <span class="text-brand-accent">GoCardless</span></span>
+            </div>
+            <div class="hidden md:flex items-center gap-8 text-sm text-gray-400">
+                <a href="#features" class="hover:text-white transition">Features</a>
+                <a href="#how-it-works" class="hover:text-white transition">How It Works</a>
+                <a href="#pricing" class="hover:text-white transition">Pricing</a>
+                <a href="#faq" class="hover:text-white transition">FAQ</a>
+                <a href="#install" class="btn-primary text-white px-5 py-2 rounded-lg font-medium text-sm">Install Now</a>
+            </div>
+            <!-- Mobile menu button -->
+            <button id="mobile-menu-btn" class="md:hidden text-gray-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+        </div>
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 space-y-3">
+            <a href="#features" class="block text-gray-400 hover:text-white transition">Features</a>
+            <a href="#how-it-works" class="block text-gray-400 hover:text-white transition">How It Works</a>
+            <a href="#pricing" class="block text-gray-400 hover:text-white transition">Pricing</a>
+            <a href="#faq" class="block text-gray-400 hover:text-white transition">FAQ</a>
+            <a href="#install" class="block btn-primary text-white px-5 py-2 rounded-lg font-medium text-sm text-center">Install Now</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="gradient-hero pt-32 pb-20 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div class="inline-flex items-center gap-2 bg-brand-accent/10 border border-brand-accent/30 rounded-full px-4 py-1.5 text-sm text-brand-accent mb-6">
+                        <span class="w-2 h-2 rounded-full bg-brand-accent animate-pulse"></span>
+                        GHL Marketplace App
+                    </div>
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
+                        Direct Debit<br>
+                        <span class="text-brand-accent">Inside GHL</span>
+                    </h1>
+                    <p class="text-lg text-gray-300 mb-8 leading-relaxed">
+                        Add GoCardless Direct Debit to your GoHighLevel account. 
+                        Check mandates, collect payments, and automate billing — without leaving your CRM.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="#install" class="btn-primary text-white px-8 py-3.5 rounded-xl font-semibold text-base inline-flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Install from Marketplace
+                        </a>
+                        <a href="#features" class="btn-secondary text-brand-accent px-8 py-3.5 rounded-xl font-semibold text-base">
+                            See Features
+                        </a>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4">14-day free trial. Cancel anytime.</p>
+                </div>
+                <div>
+                    <!-- Dashboard preview -->
+                    <div class="bg-brand-mid/60 border border-white/10 rounded-2xl p-6 shadow-2xl">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-brand-dark/50 rounded-lg p-4">
+                                <div class="text-xs text-gray-500 mb-2">Mandate Status</div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">✓</div>
+                                    <div>
+                                        <div class="text-white font-medium">Active Mandate</div>
+                                        <div class="text-gray-400 text-sm">MD000ABC123 • ****1234</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-brand-dark/50 rounded-lg p-4">
+                                    <div class="text-2xl font-bold text-white">£1,247</div>
+                                    <div class="text-xs text-gray-500">Collected This Month</div>
+                                </div>
+                                <div class="bg-brand-dark/50 rounded-lg p-4">
+                                    <div class="text-2xl font-bold text-white">23</div>
+                                    <div class="text-xs text-gray-500">Active Mandates</div>
+                                </div>
+                            </div>
+                            <button class="w-full bg-brand-accent/20 text-brand-accent py-3 rounded-lg font-medium">
+                                + Collect Payment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Bar -->
+    <section class="bg-brand-mid/50 border-y border-white/5 py-8 px-6">
+        <div class="max-w-4xl mx-auto flex flex-wrap items-center justify-center gap-8 md:gap-16 text-center">
+            <div>
+                <div class="text-2xl font-bold text-white">GoHighLevel</div>
+                <div class="text-xs text-gray-500 mt-1">Marketplace App</div>
+            </div>
+            <div class="text-gray-600 hidden md:block">+</div>
+            <div>
+                <div class="text-2xl font-bold text-white">GoCardless</div>
+                <div class="text-xs text-gray-500 mt-1">BACS • SEPA • ACH</div>
+            </div>
+            <div class="text-gray-600 hidden md:block">=</div>
+            <div>
+                <div class="text-2xl font-bold text-brand-accent">Automated DD</div>
+                <div class="text-xs text-gray-500 mt-1">Inside Your CRM</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem → Solution -->
+    <section class="py-20 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Sound Familiar?</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Every GHL user taking recurring payments knows these frustrations.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Pain 1 -->
+                <div class="bg-brand-mid/60 border border-white/5 rounded-2xl p-8 card-hover">
+                    <div class="text-3xl mb-4">😫</div>
+                    <h3 class="text-lg font-semibold text-white mb-2">Switching Between Dashboards</h3>
+                    <p class="text-gray-400 text-sm mb-4">Checking GoCardless, then GHL, then back again. Copy-paste customer details constantly.</p>
+                    <div class="border-t border-white/10 pt-4 mt-4">
+                        <div class="text-brand-accent font-medium text-sm mb-1">With This Integration</div>
+                        <p class="text-gray-300 text-sm">Check mandate status directly in GHL. One click.</p>
+                    </div>
+                </div>
+                <!-- Pain 2 -->
+                <div class="bg-brand-mid/60 border border-white/5 rounded-2xl p-8 card-hover">
+                    <div class="text-3xl mb-4">😤</div>
+                    <h3 class="text-lg font-semibold text-white mb-2">Chasing Failed Payments</h3>
+                    <p class="text-gray-400 text-sm mb-4">Finding out days later that a DD failed. No automatic notification in GHL.</p>
+                    <div class="border-t border-white/10 pt-4 mt-4">
+                        <div class="text-brand-accent font-medium text-sm mb-1">With This Integration</div>
+                        <p class="text-gray-300 text-sm">Webhooks sync payment status instantly. Trigger workflows on failure.</p>
+                    </div>
+                </div>
+                <!-- Pain 3 -->
+                <div class="bg-brand-mid/60 border border-white/5 rounded-2xl p-8 card-hover">
+                    <div class="text-3xl mb-4">🤯</div>
+                    <h3 class="text-lg font-semibold text-white mb-2">Manual Invoice Updates</h3>
+                    <p class="text-gray-400 text-sm mb-4">DD payment received — now manually mark the GHL invoice as paid. Every. Single. Time.</p>
+                    <div class="border-t border-white/10 pt-4 mt-4">
+                        <div class="text-brand-accent font-medium text-sm mb-1">With This Integration</div>
+                        <p class="text-gray-300 text-sm">Payments auto-sync to GHL invoices. Zero manual work.</p>
+                    </div>
+                </div>
+                <!-- Pain 4 -->
+                <div class="bg-brand-mid/60 border border-white/5 rounded-2xl p-8 card-hover">
+                    <div class="text-3xl mb-4">😟</div>
+                    <h3 class="text-lg font-semibold text-white mb-2">Sending DD Setup Links</h3>
+                    <p class="text-gray-400 text-sm mb-4">Creating billing requests in GoCardless, copying the link, pasting into GHL. Tedious.</p>
+                    <div class="border-t border-white/10 pt-4 mt-4">
+                        <div class="text-brand-accent font-medium text-sm mb-1">With This Integration</div>
+                        <p class="text-gray-300 text-sm">Send setup links via your GHL email or SMS templates. One step.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 px-6 bg-brand-mid/30">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Everything You Need</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Full GoCardless functionality, right inside GoHighLevel.</p>
+            </div>
+
+            <!-- Feature 1: Mandate Check -->
+            <div class="grid md:grid-cols-2 gap-12 items-center mb-24">
+                <div>
+                    <div class="feature-icon bg-green-500/10 text-green-400 mb-4">✓</div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Instant Mandate Check</h3>
+                    <p class="text-gray-300 mb-6">See if any contact has an active Direct Debit mandate. Search by email, get the answer in seconds.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            Searches all your GoCardless customers by email
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            Shows mandate status, ID, and masked bank details
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            Auto-check option on new contact creation
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            Tags contacts with DD status automatically
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-brand-mid/60 border border-white/10 rounded-2xl p-6">
+                    <div class="text-sm text-gray-500 mb-4">Mandate Check Result</div>
+                    <div class="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="text-green-400 text-2xl">✓</div>
+                            <div>
+                                <div class="text-white font-medium">Active Mandate Found</div>
+                                <div class="text-gray-400 text-sm">Ready to collect payments</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between"><span class="text-gray-500">Mandate ID</span><span class="text-white">MD000ABC123456</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Bank</span><span class="text-white">Barclays ****1234</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Status</span><span class="text-green-400">Active</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Created</span><span class="text-white">15 Jan 2026</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 2: Billing Requests -->
+            <div class="grid md:grid-cols-2 gap-12 items-center mb-24">
+                <div class="order-2 md:order-1 bg-brand-mid/60 border border-white/10 rounded-2xl p-6">
+                    <div class="text-sm text-gray-500 mb-4">Send Billing Request</div>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Customer</div>
+                            <div class="bg-brand-dark/50 rounded p-3 text-white">john@example.com</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Description</div>
+                            <div class="bg-brand-dark/50 rounded p-3 text-white">Monthly Membership</div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button class="flex-1 bg-brand-accent/20 text-brand-accent py-2 rounded font-medium text-sm">📧 Email</button>
+                            <button class="flex-1 bg-brand-accent/20 text-brand-accent py-2 rounded font-medium text-sm">📱 SMS</button>
+                        </div>
+                        <button class="w-full bg-brand-accent text-white py-3 rounded-lg font-medium">Send Setup Link</button>
+                    </div>
+                </div>
+                <div class="order-1 md:order-2">
+                    <div class="feature-icon bg-blue-500/10 text-blue-400 mb-4">📨</div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Send Billing Requests</h3>
+                    <p class="text-gray-300 mb-6">New customer needs to set up Direct Debit? Create a billing request and send via your GHL templates.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            Generate secure GoCardless setup links
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            Send via GHL email or SMS templates
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            Customer completes setup on branded GoCardless page
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            Webhook notifies when mandate is active
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Feature 3: Collect Payments -->
+            <div class="grid md:grid-cols-2 gap-12 items-center mb-24">
+                <div>
+                    <div class="feature-icon bg-purple-500/10 text-purple-400 mb-4">💳</div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Collect Payments</h3>
+                    <p class="text-gray-300 mb-6">Take one-off or recurring payments from active mandates. Enter the amount, add a description, and collect.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            One-off payments with custom amounts
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            Description appears on customer's bank statement
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            Schedule future payments with charge date
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            Link to GHL invoice for auto-reconciliation
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-brand-mid/60 border border-white/10 rounded-2xl p-6">
+                    <div class="text-sm text-gray-500 mb-4">Collect Payment</div>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Amount</div>
+                            <div class="bg-brand-dark/50 rounded p-3 flex items-center">
+                                <span class="text-gray-500 mr-2">£</span>
+                                <span class="text-white text-2xl font-bold">149.00</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Description (bank statement)</div>
+                            <div class="bg-brand-dark/50 rounded p-3 text-white">Feb Membership</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 mb-1">Charge Date</div>
+                            <div class="bg-brand-dark/50 rounded p-3 text-white">24 Feb 2026</div>
+                        </div>
+                        <button class="w-full bg-purple-500 text-white py-3 rounded-lg font-medium">Collect £149.00</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 4: Instalment Plans -->
+            <div class="grid md:grid-cols-2 gap-12 items-center mb-24">
+                <div class="order-2 md:order-1 bg-brand-mid/60 border border-white/10 rounded-2xl p-6">
+                    <div class="text-sm text-gray-500 mb-4">Payment Schedule</div>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between bg-brand-dark/50 rounded p-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded bg-green-500/20 flex items-center justify-center text-green-400 text-xs">1</div>
+                                <span class="text-white">1 Mar 2026</span>
+                            </div>
+                            <span class="text-white font-medium">£100.00</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-brand-dark/50 rounded p-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded bg-gray-500/20 flex items-center justify-center text-gray-400 text-xs">2</div>
+                                <span class="text-white">1 Apr 2026</span>
+                            </div>
+                            <span class="text-white font-medium">£100.00</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-brand-dark/50 rounded p-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded bg-gray-500/20 flex items-center justify-center text-gray-400 text-xs">3</div>
+                                <span class="text-white">1 May 2026</span>
+                            </div>
+                            <span class="text-white font-medium">£100.00</span>
+                        </div>
+                        <div class="text-center text-gray-500 text-sm">+ 9 more payments</div>
+                        <div class="border-t border-white/10 pt-3 flex justify-between">
+                            <span class="text-gray-400">Total</span>
+                            <span class="text-white font-bold">£1,200.00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="order-1 md:order-2">
+                    <div class="feature-icon bg-orange-500/10 text-orange-400 mb-4">📅</div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Instalment Plans</h3>
+                    <p class="text-gray-300 mb-6">Split large amounts into scheduled payments. Set the total, frequency, and number of instalments — we do the rest.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            Weekly, monthly, or custom frequencies
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            Automatic rounding correction
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            Cancel remaining instalments if needed
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-gray-300">
+                            <span class="text-brand-accent mt-0.5">✓</span>
+                            View all scheduled payments in dashboard
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Feature 5: Auto-Sync -->
+            <div class="max-w-2xl mx-auto">
+                <div class="text-center">
+                    <div class="feature-icon bg-cyan-500/10 text-cyan-400 mb-4 mx-auto">⚡</div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Automatic Payment Sync</h3>
+                    <p class="text-gray-300 mb-6">Payment confirmed in GoCardless? Your GHL invoice updates automatically. Failed payment? Trigger a workflow.</p>
+                </div>
+                <div class="bg-brand-mid/60 border border-white/10 rounded-2xl p-8">
+                    <div class="space-y-4 text-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400">✓</div>
+                            <div class="flex-1">
+                                <div class="text-white font-medium">Payment Confirmed</div>
+                                <div class="text-gray-500 text-xs">GoCardless webhook received</div>
+                            </div>
+                            <div class="text-gray-600">→</div>
+                            <div class="text-gray-400 text-xs">GHL invoice marked paid</div>
+                        </div>
+                        <div class="border-t border-white/5"></div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center text-red-400">✗</div>
+                            <div class="flex-1">
+                                <div class="text-white font-medium">Payment Failed</div>
+                                <div class="text-gray-500 text-xs">Insufficient funds</div>
+                            </div>
+                            <div class="text-gray-600">→</div>
+                            <div class="text-gray-400 text-xs">GHL workflow triggered</div>
+                        </div>
+                        <div class="border-t border-white/5"></div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400">🔔</div>
+                            <div class="flex-1">
+                                <div class="text-white font-medium">Mandate Activated</div>
+                                <div class="text-gray-500 text-xs">Customer set up DD</div>
+                            </div>
+                            <div class="text-gray-600">→</div>
+                            <div class="text-gray-400 text-xs">Contact tagged "DD-Active"</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="py-20 px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Up and Running in 5 Minutes</h2>
+                <p class="text-gray-400 text-lg">Three steps. That's it.</p>
+            </div>
+            <div class="space-y-8">
+                <!-- Step 1 -->
+                <div class="flex items-start gap-6 bg-brand-mid/40 border border-white/5 rounded-2xl p-8">
+                    <div class="step-number bg-brand-accent/20 text-brand-accent shrink-0">1</div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Install from GHL Marketplace</h3>
+                        <p class="text-gray-400">Find "GoCardless Integration" in the GHL Marketplace. Click Install and authorise the app.</p>
+                    </div>
+                </div>
+                <!-- Step 2 -->
+                <div class="flex items-start gap-6 bg-brand-mid/40 border border-white/5 rounded-2xl p-8">
+                    <div class="step-number bg-brand-accent/20 text-brand-accent shrink-0">2</div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Connect GoCardless</h3>
+                        <p class="text-gray-400">Enter your GoCardless API token. Choose sandbox for testing or live for production. We'll verify the connection.</p>
+                    </div>
+                </div>
+                <!-- Step 3 -->
+                <div class="flex items-start gap-6 bg-brand-mid/40 border border-white/5 rounded-2xl p-8">
+                    <div class="step-number bg-brand-accent/20 text-brand-accent shrink-0">3</div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Start Collecting Payments</h3>
+                        <p class="text-gray-400">Check mandates, send billing requests, and collect payments — all from inside GoHighLevel.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-20 px-6 bg-brand-mid/30">
+        <div class="max-w-lg mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Simple Pricing</h2>
+            <p class="text-gray-400 text-lg mb-12">14-day free trial. No credit card required to start.</p>
+            
+            <div class="bg-brand-mid/60 border border-brand-accent/30 rounded-3xl p-10 card-hover">
+                <div class="inline-flex items-center gap-2 bg-brand-accent/10 rounded-full px-4 py-1.5 text-sm text-brand-accent mb-6">
+                    14-Day Free Trial
+                </div>
+                <div class="mb-6">
+                    <span class="text-5xl font-extrabold text-white">£49</span>
+                    <span class="text-gray-400 text-lg">/month</span>
+                </div>
+                <p class="text-gray-400 mb-2">Per GHL Location</p>
+                <p class="text-gray-500 text-sm mb-8">Billed annually at £470/year — save 20%</p>
+                <ul class="space-y-3 text-left mb-10">
+                    <li class="flex items-center gap-3 text-gray-300">
+                        <span class="text-brand-accent">✓</span> Unlimited mandate checks
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-300">
+                        <span class="text-brand-accent">✓</span> Unlimited billing requests
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-300">
+                        <span class="text-brand-accent">✓</span> Unlimited payments
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-300">
+                        <span class="text-brand-accent">✓</span> Instalment plans
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-300">
+                        <span class="text-brand-accent">✓</span> Auto-sync to GHL invoices
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-300">
+                        <span class="text-brand-accent">✓</span> Webhook integration
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-300">
+                        <span class="text-brand-accent">✓</span> Email support
+                    </li>
+                </ul>
+                <a href="#install" class="btn-primary text-white px-8 py-4 rounded-xl font-semibold text-lg block mb-3">
+                    Start Free Trial
+                </a>
+                <p class="text-sm text-gray-500 mt-4">GoCardless fees apply separately (1-2% per transaction)</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-20 px-6">
+        <div class="max-w-3xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Frequently Asked Questions</h2>
+            </div>
+            <div class="space-y-4">
+                <!-- FAQ 1 -->
+                <details class="bg-brand-mid/40 border border-white/5 rounded-xl group">
+                    <summary class="flex items-center justify-between p-6 cursor-pointer text-white font-medium hover:text-brand-accent transition">
+                        Do I need a GoCardless account?
+                        <svg class="w-5 h-5 text-gray-500 group-open:rotate-45 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </summary>
+                    <div class="px-6 pb-6 text-gray-400">Yes. This integration connects your existing GoCardless account to GoHighLevel. If you don't have one, you can sign up at <a href="https://gocardless.com" class="text-brand-accent hover:underline">gocardless.com</a>. They offer a sandbox environment for testing.</div>
+                </details>
+                <!-- FAQ 2 -->
+                <details class="bg-brand-mid/40 border border-white/5 rounded-xl group">
+                    <summary class="flex items-center justify-between p-6 cursor-pointer text-white font-medium hover:text-brand-accent transition">
+                        Which payment methods are supported?
+                        <svg class="w-5 h-5 text-gray-500 group-open:rotate-45 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </summary>
+                    <div class="px-6 pb-6 text-gray-400">GoCardless supports UK BACS Direct Debit, SEPA Direct Debit (Euro), and ACH (US). The specific methods available depend on your GoCardless account configuration and customer location.</div>
+                </details>
+                <!-- FAQ 3 -->
+                <details class="bg-brand-mid/40 border border-white/5 rounded-xl group">
+                    <summary class="flex items-center justify-between p-6 cursor-pointer text-white font-medium hover:text-brand-accent transition">
+                        How long do payments take?
+                        <svg class="w-5 h-5 text-gray-500 group-open:rotate-45 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </summary>
+                    <div class="px-6 pb-6 text-gray-400">BACS (UK): 3 working days to confirm, 4-5 days to receive funds. SEPA (Euro): 3-4 days. The integration updates payment status in real-time via webhooks as each stage completes.</div>
+                </details>
+                <!-- FAQ 4 -->
+                <details class="bg-brand-mid/40 border border-white/5 rounded-xl group">
+                    <summary class="flex items-center justify-between p-6 cursor-pointer text-white font-medium hover:text-brand-accent transition">
+                        Is my data secure?
+                        <svg class="w-5 h-5 text-gray-500 group-open:rotate-45 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </summary>
+                    <div class="px-6 pb-6 text-gray-400">Yes. All API tokens are encrypted at rest. We never store full bank account numbers — that data stays with GoCardless (who are FCA-regulated and PCI-DSS compliant). Communication between systems uses HTTPS/TLS.</div>
+                </details>
+                <!-- FAQ 5 -->
+                <details class="bg-brand-mid/40 border border-white/5 rounded-xl group">
+                    <summary class="flex items-center justify-between p-6 cursor-pointer text-white font-medium hover:text-brand-accent transition">
+                        Can I test before going live?
+                        <svg class="w-5 h-5 text-gray-500 group-open:rotate-45 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </summary>
+                    <div class="px-6 pb-6 text-gray-400">Absolutely. Connect your GoCardless sandbox account first. Test mandates, payments, and webhooks with fake data. When you're ready, switch to your live GoCardless token — no reinstallation needed.</div>
+                </details>
+                <!-- FAQ 6 -->
+                <details class="bg-brand-mid/40 border border-white/5 rounded-xl group">
+                    <summary class="flex items-center justify-between p-6 cursor-pointer text-white font-medium hover:text-brand-accent transition">
+                        Can I cancel anytime?
+                        <svg class="w-5 h-5 text-gray-500 group-open:rotate-45 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </summary>
+                    <div class="px-6 pb-6 text-gray-400">Yes. Cancel your subscription at any time. Your access continues until the end of the billing period. Existing GoCardless mandates and payments are unaffected — they live in your GoCardless account.</div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- Install CTA -->
+    <section id="install" class="py-20 px-6 gradient-hero">
+        <div class="max-w-3xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">Ready to Add Direct Debit to GHL?</h2>
+            <p class="text-gray-300 text-lg mb-10">Install from the GHL Marketplace and start your 14-day free trial.</p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="https://marketplace.gohighlevel.com/" class="btn-primary text-white px-10 py-4 rounded-xl font-semibold text-lg inline-flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Install from Marketplace
+                </a>
+                <a href="docs.html" class="btn-secondary text-brand-accent px-10 py-4 rounded-xl font-semibold text-lg">
+                    View Documentation
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-12 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-7 h-7 rounded-lg gradient-accent flex items-center justify-center text-white font-bold text-xs">GC</div>
+                        <span class="text-white font-semibold">GHL GoCardless</span>
+                    </div>
+                    <p class="text-gray-500 text-sm">Direct Debit integration for GoHighLevel.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium mb-3 text-sm">Product</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="#features" class="hover:text-gray-300 transition">Features</a></li>
+                        <li><a href="#pricing" class="hover:text-gray-300 transition">Pricing</a></li>
+                        <li><a href="#install" class="hover:text-gray-300 transition">Install</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium mb-3 text-sm">Resources</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="docs.html" class="hover:text-gray-300 transition">Documentation</a></li>
+                        <li><a href="#faq" class="hover:text-gray-300 transition">FAQ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium mb-3 text-sm">Support</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="mailto:guy@zoom-photo.co.uk" class="hover:text-gray-300 transition">guy@zoom-photo.co.uk</a></li>
+                        <li><a href="https://zoom-photo.uk" class="hover:text-gray-300 transition">zoom-photo.uk</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-white/5 pt-6 mb-6">
+                <p class="text-xs text-gray-600 leading-relaxed">
+                    GoHighLevel is a trademark of HighLevel Inc. GoCardless is a trademark of GoCardless Ltd. 
+                    This integration is developed by Zoom Photography Studios Ltd and is not affiliated with, 
+                    endorsed by, or sponsored by HighLevel Inc. or GoCardless Ltd.
+                </p>
+            </div>
+            <div class="border-t border-white/5 pt-8 flex flex-wrap items-center justify-between text-sm text-gray-600">
+                <p>&copy; 2026 Zoom Photography Studios Ltd. All rights reserved.</p>
+                <p>Made with ☕ for GHL users</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile menu toggle -->
+    <script>
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        btn.addEventListener('click', () => menu.classList.toggle('hidden'));
+        menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => menu.classList.add('hidden')));
+    </script>
+
+</body>
+</html>

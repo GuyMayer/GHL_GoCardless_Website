@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation — GHL GoCardless</title>
+    <meta name="description" content="User manual and documentation for GHL GoCardless integration. Learn how to check mandates, collect payments, and set up instalment plans.">
+    <link rel="canonical" href="https://dd.ghl-sidekick.com/docs.html">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#1a1a2e',
+                            mid: '#16213e',
+                            accent: '#00b4d8',
+                            light: '#48cae4',
+                            text: '#e0e0e0',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-accent { background: linear-gradient(135deg, #00b4d8 0%, #48cae4 100%); }
+        .prose h2 { scroll-margin-top: 100px; }
+        .prose h3 { scroll-margin-top: 100px; }
+        .prose a { color: #00b4d8; }
+        .prose a:hover { text-decoration: underline; }
+        .prose code { background: rgba(0,180,216,0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        .prose pre { background: #0f172a; padding: 16px; border-radius: 8px; overflow-x: auto; }
+        .prose pre code { background: none; padding: 0; }
+        .prose table { width: 100%; border-collapse: collapse; }
+        .prose th, .prose td { border: 1px solid rgba(255,255,255,0.1); padding: 12px; text-align: left; }
+        .prose th { background: rgba(0,180,216,0.1); }
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="bg-brand-dark text-brand-text">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-brand-dark/90 backdrop-blur-md border-b border-white/5">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg gradient-accent flex items-center justify-center text-white font-bold text-sm">GC</div>
+                    <span class="text-white font-semibold text-lg">GHL <span class="text-brand-accent">GoCardless</span></span>
+                </a>
+            </div>
+            <div class="flex items-center gap-6 text-sm text-gray-400">
+                <a href="index.html" class="hover:text-white transition">← Back to Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="pt-24 pb-20 px-6">
+        <div class="max-w-4xl mx-auto">
+            
+            <!-- Header -->
+            <div class="mb-12">
+                <h1 class="text-4xl font-bold text-white mb-4">Documentation</h1>
+                <p class="text-gray-400 text-lg">Complete guide to using the GHL GoCardless integration.</p>
+            </div>
+
+            <!-- Table of Contents -->
+            <div class="bg-brand-mid/40 border border-white/5 rounded-xl p-6 mb-12">
+                <h2 class="text-lg font-semibold text-white mb-4">Contents</h2>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#introduction" class="text-brand-accent hover:underline">1. Introduction</a></li>
+                    <li><a href="#getting-started" class="text-brand-accent hover:underline">2. Getting Started</a></li>
+                    <li><a href="#installation" class="text-brand-accent hover:underline">3. Installation</a></li>
+                    <li><a href="#configuration" class="text-brand-accent hover:underline">4. Configuration</a></li>
+                    <li><a href="#features" class="text-brand-accent hover:underline">5. Features</a></li>
+                    <li><a href="#using-the-integration" class="text-brand-accent hover:underline">6. Using the Integration</a></li>
+                    <li><a href="#troubleshooting" class="text-brand-accent hover:underline">7. Troubleshooting</a></li>
+                    <li><a href="#faq" class="text-brand-accent hover:underline">8. FAQ</a></li>
+                </ul>
+            </div>
+
+            <!-- Documentation Content -->
+            <div class="prose prose-invert max-w-none space-y-12">
+
+                <!-- Introduction -->
+                <section id="introduction">
+                    <h2 class="text-2xl font-bold text-white border-b border-white/10 pb-3 mb-6">1. Introduction</h2>
+                    
+                    <p class="text-gray-300 mb-4">The GHL GoCardless Integration connects your GoHighLevel account with GoCardless Direct Debit payment processing. This allows you to:</p>
+                    
+                    <ul class="list-disc list-inside space-y-2 text-gray-300 mb-6">
+                        <li><strong class="text-white">Check mandate status</strong> — Instantly see if a contact has an active Direct Debit mandate</li>
+                        <li><strong class="text-white">Create billing requests</strong> — Send secure links for customers to set up Direct Debit</li>
+                        <li><strong class="text-white">Collect payments</strong> — Take one-off or recurring payments from existing mandates</li>
+                        <li><strong class="text-white">Set up instalments</strong> — Create payment plans with multiple scheduled payments</li>
+                        <li><strong class="text-white">Sync automatically</strong> — Keep payment statuses in sync between both platforms</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-white mt-8 mb-4">What is GoCardless?</h3>
+                    <p class="text-gray-300 mb-4">GoCardless is a Direct Debit payment processor supporting:</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-white">UK BACS</strong> — 3 working day collection</li>
+                        <li><strong class="text-white">EU SEPA</strong> — Euro payments across Europe</li>
+                        <li><strong class="text-white">ACH</strong> — US bank transfers</li>
+                    </ul>
+                    <p class="text-gray-300 mt-4">Direct Debit is ideal for recurring payments as customers only need to authorise once.</p>
+                </section>
+
+                <!-- Getting Started -->
+                <section id="getting-started">
+                    <h2 class="text-2xl font-bold text-white border-b border-white/10 pb-3 mb-6">2. Getting Started</h2>
+                    
+                    <h3 class="text-xl font-semibold text-white mb-4">Prerequisites</h3>
+                    <p class="text-gray-300 mb-4">Before you begin, ensure you have:</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300 mb-6">
+                        <li>✅ A GoHighLevel account with API access</li>
+                        <li>✅ A GoCardless account (sandbox for testing, live for production)</li>
+                        <li>✅ Admin access to install marketplace apps</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-white mt-8 mb-4">GoCardless Account Setup</h3>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-300">
+                        <li>Create an account at <a href="https://gocardless.com">gocardless.com</a></li>
+                        <li>Complete verification (live accounts require business verification)</li>
+                        <li>Generate an API access token:
+                            <ul class="list-disc list-inside ml-6 mt-2 space-y-1">
+                                <li>Go to <strong class="text-white">Developers</strong> → <strong class="text-white">API Keys</strong></li>
+                                <li>Create a new access token with full permissions</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </section>
+
+                <!-- Installation -->
+                <section id="installation">
+                    <h2 class="text-2xl font-bold text-white border-b border-white/10 pb-3 mb-6">3. Installation</h2>
+                    
+                    <h3 class="text-xl font-semibold text-white mb-4">From GHL Marketplace</h3>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-300 mb-6">
+                        <li>Open GoHighLevel and navigate to <strong class="text-white">Marketplace</strong></li>
+                        <li>Search for "GoCardless Integration"</li>
+                        <li>Click <strong class="text-white">Install</strong></li>
+                        <li>You'll be redirected to authorise the integration</li>
+                        <li>Grant the requested permissions:
+                            <ul class="list-disc list-inside ml-6 mt-2 space-y-1">
+                                <li>Read/Write Contacts</li>
+                                <li>Read/Write Invoices</li>
+                                <li>Access Custom Fields</li>
+                            </ul>
+                        </li>
+                    </ol>
+
+                    <h3 class="text-xl font-semibold text-white mt-8 mb-4">Connect GoCardless</h3>
+                    <p class="text-gray-300 mb-4">After installing, you'll be prompted to connect your GoCardless account:</p>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-300">
+                        <li>Select your environment:
+                            <ul class="list-disc list-inside ml-6 mt-2 space-y-1">
+                                <li><strong class="text-white">Sandbox</strong> — For testing (no real payments)</li>
+                                <li><strong class="text-white">Live</strong> — For production use</li>
+                            </ul>
+                        </li>
+                        <li>Enter your GoCardless API token</li>
+                        <li>Click <strong class="text-white">Connect</strong></li>
+                        <li>The integration will verify your connection and display your merchant details</li>
+                    </ol>
+                </section>
+
+                <!-- Configuration -->
+                <section id="configuration">
+                    <h2 class="text-2xl font-bold text-white border-b border-white/10 pb-3 mb-6">4. Configuration</h2>
+                    
+                    <h3 class="text-xl font-semibold text-white mb-4">Settings Overview</h3>
+                    <p class="text-gray-300 mb-4">Access settings via the integration dashboard:</p>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr>
+                                    <th class="text-left">Setting</th>
+                                    <th class="text-left">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-300">
+                                <tr><td><strong class="text-white">Environment</strong></td><td>Sandbox or Live mode</td></tr>
+                                <tr><td><strong class="text-white">Email Template</strong></td><td>Template for sending DD setup links</td></tr>
+                                <tr><td><strong class="text-white">SMS Template</strong></td><td>Template for SMS mandate requests</td></tr>
+                                <tr><td><strong class="text-white">Auto-Check Mandate</strong></td><td>Check mandate on contact creation</td></tr>
+                                <tr><td><strong class="text-white">Auto-Sync Payments</strong></td><td>Mark GHL invoices as paid automatically</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="text-xl font-semibold text-white mt-8 mb-4">Email Templates</h3>
+                    <p class="text-gray-300 mb-4">Create a GHL email template with the placeholder <code>{{mandate_link}}</code> where the GoCardless setup link should appear.</p>
+                    
+                    <div class="bg-brand-mid/60 rounded-lg p-4 mb-4">
+                        <div class="text-xs text-gray-500 mb-2">Example template:</div>
+                        <pre class="text-sm text-gray-300"><code>Subject: Set Up Direct Debit
+
+Hi {{contact.first_name}},
+
+Please click below to set up your Direct Debit:
+
+{{mandate_link}}
+
+This secure link will take you to GoCardless to authorise the payment.
+
+Thanks,
+{{location.name}}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Features -->
+                <section id="features">
+                    <h2 class="text-2xl font-bold text-white border-b border-white/10 pb-3 mb-6">5. Features</h2>
+                    
+                    <h3 class="text-xl font-semibold text-white mb-4">Mandate Check</h3>
+                    <p class="text-gray-300 mb-4">Instantly verify if a contact has an active Direct Debit mandate.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300 mb-4">
+                        <li>Searches by email address</li>
+                        <li>Returns mandate status, ID, and bank details (masked)</li>
+                        <li>Can be automated on contact creation</li>
+                    </ul>
+
+                    <p class="text-gray-300 mb-2"><strong class="text-white">Mandate Statuses:</strong></p>
+                    <div class="overflow-x-auto mb-6">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr><th>Status</th><th>Meaning</th></tr>
+                            </thead>
+                            <tbody class="text-gray-300">
+                                <tr><td><code>active</code></td><td>Ready to collect payments</td></tr>
+                                <tr><td><code>pending_submission</code></td><td>Awaiting bank processing</td></tr>
+                                <tr><td><code>submitted</code></td><td>Sent to bank</td></tr>
+                                <tr><td><code>cancelled</code></td><td>Customer or merchant cancelled</td></tr>
+                                <tr><td><code>failed</code></td><td>Bank rejected the mandate</td></tr>
+                                <tr><td><code>expired</code></td><td>No payments for 13+ months</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="text-xl font-semibold text-white mt-8 mb-4">Create Billing Request</h3>
+                    <p class="text-gray-300 mb-4">Send a secure link for new customers to set up Direct Debit.</p>
+                    <p class="text-gray-300 mb-2"><strong class="text-white">Options:</strong></p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300 mb-4">
+                        <li>Send via Email</li>
+                        <li>Send via SMS</li>
+                        <li>Copy link manually</li>
+                    </ul>
+                    <p class="text-gray-300 mb-2"><strong class="text-white">Flow:</strong></p>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-300 mb-6">
+                        <li>Customer receives link</li>
+                        <li>Opens GoCardless hosted page</li>
+                        <li>Enters bank details</li>
+                        <li>Confirms authorisation</li>
+                        <li>Mandate becomes active (1-3 days)</li>
+                        <li>You receive webhook notification</li>
+                    </ol>
+
+                    <h3 class="text-xl font-semibold text-white mt-8 mb-4">Collect Payment</h3>
+                    <p class="text-gray-300 mb-4">Take a one-off payment from an active mandate.</p>
+                    <div class="overflow-x-auto mb-4">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr><th>Field</th><th>Description</th></tr>
+                            </thead>
+                            <tbody class="text-gray-300">
+                                <tr><td><strong class="text-white">Amount</strong></td><td>Payment amount in pence/cents</td></tr>
+                                <tr><td><strong class="text-white">Description</strong></td><td>Shown on customer's bank statement</td></tr>
+                                <tr><td><strong class="text-white">Reference</strong></td><td>Your internal reference</td></tr>
+                                <tr><td><strong class="text-white">Charge Date</strong></td><td>When to collect (optional)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p class="text-gray-300 mb-2"><strong class="text-white">Payment Timeline (BACS):</strong></p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300 mb-6">
+                        <li>Day 0: Payment created</li>
+                        <li>Day 1: Submitted to bank</li>
+                        <li>Day 3: Confirmed</li>
+                        <li>Day 4-5: Funds received</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-white mt-8 mb-4">Instalment Plans</h3>
+                    <p class="text-gray-300 mb-4">Create scheduled payment series for payment plans.</p>
+                    <p class="text-gray-300 mb-2"><strong class="text-white">Example:</strong> £1,200 in 12 monthly instalments of £100</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li>Total amount or individual amounts</li>
+                        <li>Start date</li>
+                        <li>Frequency (weekly, monthly, yearly)</li>
+                        <li>Number of instalments</li>
+                        <li>Automatic retry on failure</li>
+                        <li>Cancel remaining instalments if needed</li>
+                    </ul>
+                </section>
+
+                <!-- Using the Integration -->
+                <section id="using-the-integration">
+                    <h2 class="text-2xl font-bold text-white border-b border-white/10 pb-3 mb-6">6. Using the Integration</h2>
+                    
+                    <h3 class="text-xl font-semibold text-white mb-4">Check a Contact's Mandate</h3>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-300 mb-6">
+                        <li>Open a contact in GHL</li>
+                        <li>Click the <strong class="text-white">GoCardless</strong> tab (or custom field)</li>
+                        <li>View mandate status:
+                            <ul class="list-disc list-inside ml-6 mt-2 space-y-1">
+                                <li>✅ <strong class="text-white">Has Mandate</strong> — Shows mandate ID and bank</li>
+                                <li>❌ <strong class="text-white">No Mandate</strong> — Option to send setup link</li>
+                            </ul>
+                        </li>
+                    </ol>
+
+                    <h3 class="text-xl font-semibold text-white mt-8 mb-4">Send a Mandate Setup Link</h3>
+                    <p class="text-gray-300 mb-2"><strong class="text-white">Via Dashboard:</strong></p>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-300 mb-4">
+                        <li>Go to integration dashboard</li>
+                        <li>Click <strong class="text-white">New Billing Request</strong></li>
+                        <li>Enter customer details: Email (required), Name, Phone (for SMS)</li>
+                        <li>Select delivery method</li>
+                        <li>Click <strong class="text-white">Send</strong></li>
+                    </ol>
+
+                    <p class="text-gray-300 mb-2"><strong class="text-white">Via Workflow (Automation):</strong></p>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-300 mb-4">
+                        <li>Create a GHL workflow</li>
+                        <li>Add <strong class="text-white">HTTP Request</strong> action</li>
+                        <li>Configure:</li>
+                    </ol>
+                    <pre class="text-sm"><code>POST /api/billing-request
+{
+  "email": "{{contact.email}}",
+  "name": "{{contact.full_name}}",
+  "description": "Monthly Plan",
+  "send_email": true
+}</code></pre>
+
+                    <h3 class="text-xl font-semibold text-white mt-8 mb-4">Collect a Payment</h3>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-300 mb-6">
+                        <li>Open contact with active mandate</li>
+                        <li>Click <strong class="text-white">Collect Payment</strong></li>
+                        <li>Enter amount (e.g., £99.00) and description</li>
+                        <li>Click <strong class="text-white">Collect</strong></li>
+                        <li>Payment status updates automatically</li>
+                    </ol>
+
+                    <h3 class="text-xl font-semibold text-white mt-8 mb-4">Create Instalments</h3>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-300">
+                        <li>Open contact with active mandate</li>
+                        <li>Click <strong class="text-white">Create Instalment Plan</strong></li>
+                        <li>Configure: Total amount, number of instalments, frequency, start date</li>
+                        <li>Click <strong class="text-white">Create Plan</strong></li>
+                        <li>View scheduled payments in dashboard</li>
+                    </ol>
+                </section>
+
+                <!-- Troubleshooting -->
+                <section id="troubleshooting">
+                    <h2 class="text-2xl font-bold text-white border-b border-white/10 pb-3 mb-6">7. Troubleshooting</h2>
+                    
+                    <h3 class="text-xl font-semibold text-white mb-4">Common Issues</h3>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-brand-mid/40 rounded-lg p-4">
+                            <div class="text-white font-medium mb-2">"Mandate not found"</div>
+                            <p class="text-gray-400 text-sm mb-2"><strong>Cause:</strong> Email doesn't match GoCardless customer</p>
+                            <p class="text-gray-300 text-sm"><strong>Fix:</strong> Search by alternative email or check GoCardless dashboard</p>
+                        </div>
+                        <div class="bg-brand-mid/40 rounded-lg p-4">
+                            <div class="text-white font-medium mb-2">"Payment failed"</div>
+                            <p class="text-gray-400 text-sm mb-2"><strong>Cause:</strong> Insufficient funds, cancelled mandate, or bank rejection</p>
+                            <p class="text-gray-300 text-sm"><strong>Fix:</strong> Check failure reason, contact customer, or create new mandate</p>
+                        </div>
+                        <div class="bg-brand-mid/40 rounded-lg p-4">
+                            <div class="text-white font-medium mb-2">"Token expired"</div>
+                            <p class="text-gray-400 text-sm mb-2"><strong>Cause:</strong> GoCardless access token revoked or expired</p>
+                            <p class="text-gray-300 text-sm"><strong>Fix:</strong> Reconnect in Settings → GoCardless → Reconnect</p>
+                        </div>
+                    </div>
+
+                    <h3 class="text-xl font-semibold text-white mt-8 mb-4">Error Codes</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr><th>Code</th><th>Meaning</th><th>Action</th></tr>
+                            </thead>
+                            <tbody class="text-gray-300">
+                                <tr><td><code>401</code></td><td>Invalid API token</td><td>Reconnect GoCardless</td></tr>
+                                <tr><td><code>403</code></td><td>Insufficient permissions</td><td>Check token scopes</td></tr>
+                                <tr><td><code>404</code></td><td>Resource not found</td><td>Verify mandate/payment ID</td></tr>
+                                <tr><td><code>422</code></td><td>Validation error</td><td>Check request parameters</td></tr>
+                                <tr><td><code>429</code></td><td>Rate limited</td><td>Wait and retry</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- FAQ -->
+                <section id="faq">
+                    <h2 class="text-2xl font-bold text-white border-b border-white/10 pb-3 mb-6">8. FAQ</h2>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <p class="text-white font-medium mb-2">Q: Is this secure?</p>
+                            <p class="text-gray-300">A: Yes. All sensitive data (tokens, bank details) is encrypted. GoCardless is FCA-regulated and PCI-DSS compliant. We never store full bank account numbers.</p>
+                        </div>
+                        <div>
+                            <p class="text-white font-medium mb-2">Q: Can I use sandbox for testing?</p>
+                            <p class="text-gray-300">A: Yes. Start with sandbox to test the flow without real payments. Switch to live when ready.</p>
+                        </div>
+                        <div>
+                            <p class="text-white font-medium mb-2">Q: How much does GoCardless cost?</p>
+                            <p class="text-gray-300">A: GoCardless charges 1-2% per transaction (varies by region). Check <a href="https://gocardless.com/pricing">gocardless.com/pricing</a> for current rates.</p>
+                        </div>
+                        <div>
+                            <p class="text-white font-medium mb-2">Q: How long does mandate setup take?</p>
+                            <p class="text-gray-300">A: Typically 1-3 business days for BACS (UK). SEPA can be instant with supporting banks.</p>
+                        </div>
+                        <div>
+                            <p class="text-white font-medium mb-2">Q: Can customers cancel their mandate?</p>
+                            <p class="text-gray-300">A: Yes, customers can cancel via their bank. You'll receive a webhook notification.</p>
+                        </div>
+                        <div>
+                            <p class="text-white font-medium mb-2">Q: When do I receive funds?</p>
+                            <p class="text-gray-300">A: BACS payments: 4-5 working days. SEPA: 3-4 working days. Your GoCardless payout schedule may add 1-2 days.</p>
+                        </div>
+                        <div>
+                            <p class="text-white font-medium mb-2">Q: Can I use this with multiple GHL locations?</p>
+                            <p class="text-gray-300">A: Yes, each location can connect their own GoCardless account.</p>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- Support -->
+            <div class="mt-16 bg-brand-mid/40 border border-white/10 rounded-xl p-8 text-center">
+                <h3 class="text-xl font-semibold text-white mb-4">Need Help?</h3>
+                <p class="text-gray-400 mb-4">Contact us for support</p>
+                <a href="mailto:guy@zoom-photo.co.uk" class="text-brand-accent hover:underline">guy@zoom-photo.co.uk</a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-8 px-6">
+        <div class="max-w-4xl mx-auto text-center text-sm text-gray-600">
+            <p>&copy; 2026 Zoom Photography Studios Ltd. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
