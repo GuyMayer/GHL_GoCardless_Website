@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SideKick GC Help</title>
+<style>
+  :root {
+    --bg: #16181d;
+    --panel: #1f2229;
+    --border: #323641;
+    --text: #e6e8ee;
+    --muted: #9aa1ae;
+    --accent: #4f8cff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    font-size: 16px;
+  }
+  .bar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    z-index: 10;
+  }
+  .bar h1 {
+    font-size: 17px;
+    margin: 0;
+    flex: 1;
+    font-weight: 600;
+  }
+  .bar a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 13px;
+  }
+  .bar a:hover { text-decoration: underline; }
+  button {
+    background: var(--accent);
+    color: #fff;
+    border: 0;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  button:hover { filter: brightness(1.1); }
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+  h1, h2, h3, h4 { color: #fff; line-height: 1.3; }
+  h1 { font-size: 1.9em; border-bottom: 1px solid var(--border); padding-bottom: .3em; }
+  h2 { font-size: 1.45em; margin-top: 1.6em; }
+  h3 { font-size: 1.15em; }
+  a { color: var(--accent); }
+  code {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+  }
+  pre {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    overflow-x: auto;
+  }
+  pre code { background: none; border: 0; padding: 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+    background: var(--panel);
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #262a33; color: #fff; }
+  tr:nth-child(even) td { background: #1c1f26; }
+  blockquote {
+    margin: 1em 0;
+    padding: 2px 16px;
+    border-left: 4px solid var(--accent);
+    background: var(--panel);
+    color: var(--muted);
+  }
+  img { max-width: 100%; }
+  hr { border: 0; border-top: 1px solid var(--border); margin: 2em 0; }
+  ul, ol { padding-left: 1.5em; }
+  .for-ai {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 24px;
+  }
+  .for-ai h2 { margin: 0 0 8px; font-size: 1.1em; }
+  .for-ai p {
+    margin: 0 0 12px;
+    color: var(--muted);
+    word-break: break-word;
+  }
+</style>
+</head>
+<body>
+<div class="bar">
+  <h1>SideKick GC Help</h1>
+  <a href="https://dd.ghl-sidekick.com/help.html" target="_blank" rel="noopener">Live version</a>
+</div>
+<main>
+<section class="for-ai">
+  <h2>For AI</h2>
+  <p>The SideKick GC Help user manual is available at https://dd.ghl-sidekick.com/help.html. Open that page and answer the user&#x27;s questions about SideKick GC from it.</p>
+  <button id="copy-ai-btn" type="button" data-instruction="The SideKick GC Help user manual is available at https://dd.ghl-sidekick.com/help.html. Open that page and answer the user&#x27;s questions about SideKick GC from it.">Copy instruction</button>
+</section>
+<h1>SideKick_GC — User Manual</h1>
+<p>A desktop application for managing GoCardless Direct Debit mandates, payment plans, and customer notifications.</p>
+<p><em>Last updated: 2026-09-29</em></p>
+<hr />
+<h2>Getting Started</h2>
+<h3>First Launch</h3>
+<ol>
+<li>Double-click the desktop shortcut or run <code>python -m sidekick_gc</code></li>
+<li>Go to the <strong>Settings</strong> tab</li>
+<li>Paste your GoCardless API token — it saves automatically</li>
+<li>Click <strong>Test Connection</strong> to verify</li>
+<li>If using GHL integration, enter your API Key and Location ID, then click <strong>Test Connection</strong></li>
+</ol>
+<p>The status bar at the bottom shows <strong>LIVE</strong> (green) or <strong>SANDBOX</strong> (orange) to indicate which environment you're connected to.</p>
+<h3>System Tray</h3>
+<p>When you close the window, the app minimizes to the system tray (bottom-right of taskbar). The tray icon menu provides:</p>
+<ul>
+<li><strong>Show Window</strong> — restore the app</li>
+<li><strong>Notifications: On/Off</strong> — current polling status</li>
+<li><strong>Settings</strong> — jump to Settings tab</li>
+<li><strong>Restart</strong> — restart the application</li>
+<li><strong>Exit</strong> — fully close the app</li>
+</ul>
+<p>Double-click the tray icon to show the window.</p>
+<hr />
+<h2>Client Tab</h2>
+<p>Search for customers and manage their mandate status.</p>
+<h3>Searching for a Client</h3>
+<p><strong>Option 1: Manual entry</strong></p>
+<ul>
+<li>Type the client's email address in the Email field</li>
+<li>Click <strong>Check Mandate</strong></li>
+</ul>
+<p><strong>Option 2: GHL search</strong></p>
+<ul>
+<li>Type a name or email in the search box</li>
+<li>Click <strong>Search GHL</strong> — a dialog shows matching contacts</li>
+<li>Select a contact to populate their details</li>
+</ul>
+<h3>Mandate Status</h3>
+<p>After checking, the status panel shows:</p>
+<ul>
+<li><strong>Mandate Found</strong> — customer has an active Direct Debit mandate, with bank name and any active plans listed</li>
+<li><strong>No Mandate</strong> — customer exists but has no active mandate</li>
+<li><strong>No Customer</strong> — email not found in GoCardless</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> When used via the SideKick PS toolbar, a "No Customer" result automatically triggers a name-based search. If a match is found under a different email, a confirmation dialog is shown before proceeding.</p>
+</blockquote>
+<h3>Creating a Billing Request</h3>
+<p>If the customer has no mandate:</p>
+<ol>
+<li>Fill in First Name, Last Name, and Email</li>
+<li>Click <strong>Create Billing Request</strong></li>
+<li>A mandate setup link is generated</li>
+<li>Use <strong>Copy Link</strong>, <strong>QR Code</strong>, or <strong>Send via GHL</strong> (email/SMS) to share it with the customer</li>
+</ol>
+<h3>Sending Notifications</h3>
+<p>If GHL templates are configured in Settings:</p>
+<ul>
+<li><strong>Send Email</strong> — sends the configured email template via GHL</li>
+<li><strong>Send SMS</strong> — sends the configured SMS template via GHL</li>
+</ul>
+<hr />
+<h2>Payment Plans Tab</h2>
+<p>Create instalment schedules against a customer's active mandate.</p>
+<h3>Creating a Plan</h3>
+<ol>
+<li>
+<p><strong>Plan Name</strong> (top-right) — enter a reference (e.g., <code>P26001-Smith</code>). Only bank-statement-safe characters allowed: <code>A-Z 0-9 - . &amp; /</code>. The statement preview shows what appears on the customer's bank statement (Statement Label prefix + plan name).</p>
+</li>
+<li>
+<p><strong>Plan Details</strong> (left column):</p>
+</li>
+<li><strong>Total Amount</strong> — the full balance in pounds (e.g., <code>500.00</code>)</li>
+<li><strong>Number of Payments</strong> — how many instalments (1–60)</li>
+<li><strong>Recurring</strong> — Monthly, Weekly, Bi-Weekly, or 4-Weekly</li>
+<li><strong>Day of Month</strong> — which day payments are collected (1st–28th or Last Day)</li>
+<li>
+<p><strong>Start Date</strong> — when the first instalment is collected</p>
+</li>
+<li>
+<p><strong>Payment Schedule</strong> (right column) — auto-updates as you change values, showing each payment date and amount</p>
+</li>
+<li>
+<p><strong>Downpayment</strong> (optional):</p>
+</li>
+<li>Enter an amount to collect upfront</li>
+<li>Choose payment method (Credit Card, GoCardless DD, Bank Transfer)</li>
+<li>Set the date</li>
+<li>
+<p><strong>Rounding</strong> — when the total doesn't divide evenly, the leftover pennies go to either the Downpayment or the 1st Payment (toggle with radio buttons)</p>
+</li>
+<li>
+<p>Click <strong>Create Payment Plan</strong> to submit</p>
+</li>
+</ol>
+<blockquote>
+<p><strong>Single payments:</strong> When there is only 1 payment, SideKick_GC creates a one-off payment via the Payments API instead of an instalment schedule.</p>
+</blockquote>
+<h3>Schedule Preview</h3>
+<p>The table shows:</p>
+<ul>
+<li>Row number, date, and amount for each payment</li>
+<li>A summary line showing total payments and the grand total</li>
+</ul>
+<hr />
+<h2>Payments Tab</h2>
+<p>Create payments against a mandate — mirrors the GoCardless dashboard's
+"Create payment" and "Create subscription" flows in one tab with a mode
+toggle.</p>
+<h3>Single Payment vs Subscription</h3>
+<ul>
+<li><strong>Single payment</strong> — one amount on one charge date (deposits, one-off
+  balances, or one-time collections).</li>
+<li><strong>Subscription</strong> — recurring collections. Choose an interval
+  (<strong>Weekly / Monthly / Yearly</strong>), a day of the month (or <strong>Last Day</strong>),
+  a start date, and the number of payments.</li>
+</ul>
+<p>Enter the amount and an optional description. The tab operates on the
+active client's mandate, loaded from the <strong>Client</strong> tab.</p>
+<hr />
+<h2>Refunds Tab</h2>
+<p>Find a client, view the payments collected so far, and issue a full or
+partial refund — with the option to extend their payment plan afterwards.</p>
+<ul>
+<li>Search for the client (or use the active client from the <strong>Client</strong> tab).</li>
+<li>The payments table lists collected payments with amounts and dates.</li>
+<li>Issue a <strong>full</strong> or <strong>partial</strong> refund against a payment.</li>
+<li>Optionally extend the pay plan to reschedule the remaining balance.</li>
+</ul>
+<hr />
+<h2>Stale Mandates Tab</h2>
+<p>Find and clean up mandates that are still active but have no remaining payment plans.</p>
+<h3>Usage</h3>
+<ol>
+<li>Click <strong>Refresh</strong> to scan all active mandates</li>
+<li>The table shows mandates where all plans have finished, including:</li>
+<li>Customer name and email</li>
+<li>Bank name</li>
+<li>Last payment date</li>
+<li>Total collected</li>
+<li>Tick the mandates you want to cancel</li>
+<li>Use <strong>Select All</strong> / <strong>Select None</strong> for bulk selection</li>
+<li>Click <strong>Cancel Selected</strong> to revoke them (this is <strong>irreversible</strong>)</li>
+</ol>
+<p>A progress bar shows status during both scanning and cancellation.</p>
+<hr />
+<h2>Notifications Tab</h2>
+<p>Automatically detect when a customer's bank cancels their Direct Debit mandate and tag their GHL contact.</p>
+<p>The tab scrolls when the window is too small — nothing gets cut off. The
+<strong>⚙️ Polling &amp; Sync Settings</strong> card is collapsible: click its header to
+hide the settings cards and give the event tables more room.</p>
+<h3>Setup</h3>
+<ol>
+<li><strong>Enable automatic polling</strong> — tick the checkbox</li>
+<li><strong>GHL section</strong>:</li>
+<li><strong>Cancel Tag</strong> — select or type the GHL tag to apply (e.g., <code>DD Cancelled</code>). Use the refresh button to load tags from GHL.</li>
+<li><strong>Frequency section</strong>:</li>
+<li><strong>Poll Every</strong> — how often to check (e.g., <code>24 hours</code>)</li>
+<li><strong>Start Time</strong> — when the first poll of the day runs (e.g., <code>08:00</code>)</li>
+</ol>
+<p>All settings save automatically when changed.</p>
+<h3>How It Works</h3>
+<ul>
+<li>The app polls the GoCardless Events API for mandates cancelled by the customer's bank (not cancellations you initiated)</li>
+<li>For each found cancellation, it searches GHL for the customer by email</li>
+<li>If found and not already tagged, it applies the configured tag</li>
+<li>Results appear in the table showing: cancellation date, customer name, email, cause, mandate ID, and tagging status</li>
+</ul>
+<h3>Manual Poll</h3>
+<p>Click <strong>Poll Now</strong> to check immediately without waiting for the timer. The first poll looks back 30 days; subsequent polls look back 2× the polling interval.</p>
+<h3>Status Indicators</h3>
+<p>The GHL Tag column shows:</p>
+<ul>
+<li><strong>Tagged</strong> — tag successfully applied</li>
+<li><strong>Already tagged</strong> — contact already had the tag</li>
+<li><strong>Failed</strong> — could not apply tag (hover for details)</li>
+<li><strong>Skipping</strong> — duplicate mandate already processed this session</li>
+</ul>
+<h3>Bank Transfers (studio workflow)</h3>
+<p>Visible only when <strong>Xero &amp; Bank Integration</strong> is enabled in Settings. The
+daily bank poll matches incoming Metro transfers to clients and classifies
+them:</p>
+<ul>
+<li><strong>Recorded in PSA</strong> — already logged; no action</li>
+<li><strong>Settlement</strong> — matches an active GoCardless plan; click Open Client to confirm via the Settle button</li>
+<li><strong>Manual payer</strong> — recorded with an updated statement (automatic only when the match is verified)</li>
+<li><strong>Part payment</strong> / <strong>Unmatched</strong> — shown for review; nothing runs unattended</li>
+</ul>
+<p><strong>Check Bank Now</strong> runs the poll immediately. Transfers that cannot be
+verified (e.g. an archive drive is offline) stay pending until the next poll.</p>
+<hr />
+<h2>Stats Tab</h2>
+<p>Monthly income statistics, charted from GoCardless payments that have been
+paid out.</p>
+<ul>
+<li><strong>Time Range</strong> — 1, 2, or 3 years.</li>
+<li><strong>FY Start</strong> — the month your financial year starts (default <strong>April</strong>,
+  the UK tax year).</li>
+<li><strong>Compare with previous year</strong> — overlays the prior year's income for
+  year-over-year comparison.</li>
+<li><strong>Refresh</strong> — reloads from GoCardless (results are cached for 5 minutes).</li>
+</ul>
+<p>Summary cards show <strong>YTD Total</strong>, <strong>Monthly Avg</strong>, <strong>Best Month</strong>,
+<strong>YoY Growth</strong>, <strong>Total Debt</strong>, <strong>Bad Debt</strong>, and <strong>Schedule To</strong>. A bar
+chart plots monthly income, and a table breaks it down month by month.</p>
+<p>Requires a GoCardless token (configured in Settings).</p>
+<hr />
+<h2>Banking Tab</h2>
+<p>A read-only browser over the local bank ledger (the SideKick_Xero SQLite
+database). It works like a bank-statement viewer:</p>
+<ul>
+<li><strong>Account</strong> dropdown, plus filters by date, type, and text.</li>
+<li>Sortable columns: date, reference, money in/out, payee, type, info,
+  value date, balance.</li>
+</ul>
+<p>It only reads the local ledger — no API calls and no writes. Ingestion
+happens via the daily poll/settle scripts (see <strong>Bank Transfers</strong> above
+and the <strong>Bank Feed</strong> settings below).</p>
+<hr />
+<h2>Settings Tab</h2>
+<p>Settings uses a left-hand menu with five pages. Pages scroll when the
+window is too small — nothing gets compressed.</p>
+<h3>🔑 API</h3>
+<p>All API credentials live here:</p>
+<ul>
+<li><strong>GoCardless API Token</strong> — paste your token; it saves automatically when
+  you click away. <strong>Test Connection</strong> verifies it works and <strong>GoCardless
+  Dashboard</strong> opens the GC web portal.</li>
+<li><strong>Environment</strong> — <strong>live</strong> (real payments) or <strong>sandbox</strong> (testing only,
+  no real money moves).</li>
+<li><strong>GoHighLevel (GHL) Integration</strong> — <strong>API Key</strong> (v2, from Settings &gt;
+  Business Profile &gt; API Key) and <strong>Location ID</strong>. <strong>Test Connection</strong>
+  verifies GHL credentials. Required for Client tab GHL search, contact
+  notifications, and Notifications tab tagging.</li>
+<li><strong>AI / LLM API Key</strong> — key for the AI Chat feature, with a link to get a
+  key from your provider. <strong>Test Connection</strong> verifies it.</li>
+<li><strong>Bank Feed</strong> — choose the provider for the Banking tab:</li>
+<li><strong>Nordigen</strong> (default) — the Metro bank feed for the studio.
+    <code>secret_id</code> + <code>secret_key</code>, <strong>🏦 Connect Bank</strong> (guided setup wizard)
+    and <strong>Test Connection</strong>. Shows the 90-day consent-expiry date and warns
+    when it is close to expiring. Existing credentials are pre-filled from
+    the bank-feed files; re-run the wizard to renew consent.</li>
+<li><strong>Starling</strong> — for a Starling account without the studio ledger. Paste
+    a personal access token and the Banking tab reads balances and
+    transactions directly from Starling. See "Starling Bank Feed" below.</li>
+</ul>
+<blockquote>
+<p><strong>Warning:</strong> Always verify you're on the correct environment before
+creating payments.</p>
+</blockquote>
+<h3>⭐ Starling Bank Feed</h3>
+<p>The Banking tab can read balances and transactions straight from a Starling
+account — no studio ledger, no extra software. SideKick_GC needs a
+<strong>personal access token</strong> (a long password Starling issues for apps).</p>
+<p><strong>Choose Starling as the provider:</strong></p>
+<ol>
+<li>Settings → <strong>🔑 API</strong> → <strong>Bank Feed</strong> → set <strong>Provider</strong> to <strong>Starling</strong>.</li>
+<li>Click <strong>🔗 Get PAT</strong> (opens the Starling developer site).</li>
+</ol>
+<p><strong>Create the token once (on developer.starlingbank.com):</strong></p>
+<ol>
+<li>Sign in with your normal Starling login.</li>
+<li>Open the <strong>Personal Access</strong> page
+   (<code>developer.starlingbank.com/personal/token</code>).</li>
+<li>Create a new token. Starling asks you to confirm by scanning a QR code
+   with the <strong>Starling app</strong> on your phone — this links the token to your
+   business account.</li>
+<li>Only tick the <strong>read</strong> permissions: <code>account:read</code>, <code>balance:read</code>,
+   <code>transaction:read</code>. Do not tick anything that says "write" or "edit" —
+   SideKick_GC only needs to look, never change.</li>
+<li>Copy the token and paste it into the <strong>Access Token</strong> box in SideKick_GC.</li>
+<li>Click <strong>🔌 Test Connection</strong> — a green message means it worked.</li>
+</ol>
+<p>The Banking tab then shows the account with a running balance. Transactions
+are cached on this computer, so the tab opens fast and updates as new
+transactions settle.</p>
+<h3>🧾 Billing</h3>
+<ul>
+<li><strong>Statement Label</strong> — prefix shown on customer bank statements (e.g.,
+  <code>Zoom-Photography-</code>). Banks typically show 10–18 characters total.</li>
+<li><strong>Mandate Link</strong> — fixed mandate signup URL for your business.</li>
+<li><strong>Currency</strong> — default currency for payments (GBP, EUR, USD, etc.).</li>
+<li><strong>Default Payment Window</strong> — days before the next scheduled payment that
+  the cancellation deadline falls (min 3 working days).</li>
+<li><strong>GHL Statement Tag</strong> — tag applied to the GHL contact when sending a
+  settlement statement.</li>
+</ul>
+<h3>📇 GHL</h3>
+<ul>
+<li><strong>GHL Field Mapping</strong> — choose the GHL custom fields that store
+  GoCardless data (mandate ID, balance due, plan end date, payments
+  progress, shoot number, extensions, failed-payment details, payer email,
+  message). Select <strong>(refresh)</strong> to reload the field list from GHL.</li>
+<li><strong>Notification Templates</strong> — Email / SMS / Refund templates used when
+  sending mandate setup notifications from the Client tab. Select
+  <strong>(refresh)</strong> to load available templates from GHL.</li>
+</ul>
+<h3>� Set Up GHL Tags &amp; Fields</h3>
+<p>New to SideKick_GC? This wizard does the GoHighLevel setup for you.</p>
+<ol>
+<li>On the <strong>📇 GHL</strong> page, click <strong>🪄 Set Up GHL Tags &amp; Fields…</strong>.</li>
+<li><strong>Check</strong> — the first page tests your GHL connection and lists the
+   permissions (scopes) the wizard needs. If anything shows red, follow
+   the on-screen steps to add the scope in GHL (Settings → Private
+   Integrations).</li>
+<li><strong>Preview</strong> — SideKick_GC shows every tag, contact field and the
+   <code>Payment Status</code> picklist it needs. Items that already exist are
+   marked ✅ and left alone; only missing ones are ticked for creation.
+   Untick anything you don't want.</li>
+<li><strong>Create</strong> — a progress bar shows each item as it is created.</li>
+<li><strong>Done</strong> — a summary lists what was created. Your Field Mapping
+   dropdowns are filled in automatically and you can start using the
+   Client tab.</li>
+</ol>
+<p>Notes:</p>
+<ul>
+<li>Re-running the wizard is safe — existing items are skipped.</li>
+<li>The <strong>Payment Status</strong> field needs a pipeline. Pick yours from the
+  dropdown; SideKick_GC remembers the choice.</li>
+<li>Tags for optional features (Postcode, Light Blue) only appear when
+  those features are switched on in Settings.</li>
+<li>If creation is refused (401), open your GHL integration's Scopes and
+  enable <strong>Tags (write)</strong> and <strong>Custom Fields (write)</strong>, then re-run the
+  wizard.</li>
+</ul>
+<h3>�🤖 AI Chat</h3>
+<ul>
+<li><strong>Provider</strong> — openai, openrouter, or deepseek.</li>
+<li><strong>Model</strong> — any model ID your provider supports (flash-tier models are
+  sufficient).</li>
+<li><strong>System Prompt</strong> — custom instructions for the AI (leave empty for the
+  default); <strong>Reset to Default</strong> restores the built-in prompt.</li>
+</ul>
+<h3>⚙️ Application</h3>
+<ul>
+<li><strong>Start with Windows</strong> — launch on login.</li>
+<li><strong>Close to system tray</strong> / <strong>Minimize to system tray</strong> — tray behaviour.</li>
+<li><strong>Show Windows notification on mandate cancellation</strong> — toast when a
+  bank-cancelled mandate is detected during polling.</li>
+<li><strong>Xero &amp; Bank Integration</strong> — studio workflow toggle (Xero weekly push +
+  bank transfer polling). On for Zoom Photography Studio; leave OFF for
+  generic installs — the related sections are hidden and nothing runs in
+  the background.</li>
+<li><strong>Desktop Shortcut</strong> / <strong>Chrome Shortcut</strong> — create/update the shortcuts.</li>
+<li><strong>Open Manual</strong> — open this user manual.</li>
+<li><strong>Exit</strong> — fully exit SideKick_GC.</li>
+</ul>
+<hr />
+<h2>About Tab</h2>
+<p>Shows the app name, version, and connection status (environment,
+GoCardless, and GHL), plus the support email address
+(<code>guy@zoom-photo.co.uk</code>).</p>
+<hr />
+<h2>AI Chat Tab</h2>
+<p>A built-in AI assistant for GoCardless questions. Ask about payments,
+mandates, or how to use a feature — click <strong>Help</strong> in the tab to see what
+you can ask. The system prompt is configurable in Settings.</p>
+<hr />
+<h2>Keyboard Shortcuts</h2>
+<table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Shift+R</code></td>
+<td>Reload config from disk and refresh current tab</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Troubleshooting</h2>
+<h3>"Token loaded" but Test Connection fails</h3>
+<ul>
+<li>Verify the token hasn't expired in the GoCardless dashboard</li>
+<li>Check you're on the correct environment (live vs sandbox)</li>
+</ul>
+<h3>GHL tags show "Forbidden resource"</h3>
+<ul>
+<li>Verify your API key has the correct permissions</li>
+<li>Confirm the Location ID matches your sub-account</li>
+</ul>
+<h3>Restart doesn't work from tray</h3>
+<ul>
+<li>The app releases the singleton lock before restarting. If it still fails, close fully via <strong>Exit</strong> and relaunch manually.</li>
+</ul>
+<h3>Notifications not polling</h3>
+<ul>
+<li>Ensure "Enable automatic polling" is ticked</li>
+<li>Check that a Cancel Tag is set</li>
+<li>The timer starts at the configured Start Time — if the current time has passed it, polling begins on the next interval</li>
+</ul>
+<h3>Payments fail with "mandate not active"</h3>
+<ul>
+<li>The customer's mandate may have been cancelled or is still pending</li>
+<li>Check the mandate status on the Client tab first</li>
+</ul>
+<hr />
+<h2>File Locations</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Location</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>credentials.json</code></td>
+<td><code>%APPDATA%\SideKick_GC\</code></td>
+<td>API tokens (encrypted)</td>
+</tr>
+<tr>
+<td><code>SideKick_GC.ini</code></td>
+<td>App directory or <code>%APPDATA%\SideKick_GC\</code></td>
+<td>Settings</td>
+</tr>
+<tr>
+<td>Debug logs</td>
+<td><code>%APPDATA%\SideKick_GC\Logs\</code></td>
+<td>Diagnostic logs (when enabled)</td>
+</tr>
+<tr>
+<td>Error logs</td>
+<td><code>%APPDATA%\SideKick_GC\Logs\</code></td>
+<td>Always written on errors</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p>Copyright (c) 2026 GuyMayer. All rights reserved.</p>
+</main>
+<script>
+(function () {
+  var btn = document.getElementById('copy-ai-btn');
+  function copyText() {
+    var text = btn.getAttribute('data-instruction') || '';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { flash('Copied to clipboard'); },
+        function () { fallback(text); }
+      );
+    } else {
+      fallback(text);
+    }
+  }
+  function fallback(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      flash('Copied to clipboard');
+    } catch (e) {
+      flash('Copy failed — select the page text manually');
+    }
+    document.body.removeChild(ta);
+  }
+  function flash(msg) {
+    var old = btn.textContent;
+    btn.textContent = msg;
+    setTimeout(function () { btn.textContent = old; }, 1600);
+  }
+  btn.addEventListener('click', copyText);
+})();
+</script>
+</body>
+</html>
