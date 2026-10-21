@@ -136,7 +136,6 @@
 </section>
 <h1>SideKick_GC — User Manual</h1>
 <p>A desktop application for managing GoCardless Direct Debit mandates, payment plans, and customer notifications.</p>
-<p><em>Last updated: 2026-09-29</em></p>
 <hr />
 <h2>Getting Started</h2>
 <h3>First Launch</h3>
@@ -162,12 +161,12 @@
 <h2>Client Tab</h2>
 <p>Search for customers and manage their mandate status.</p>
 <h3>Searching for a Client</h3>
-<p><strong>Option 1: Manual entry</strong></p>
+<h4>Option 1: Manual entry</h4>
 <ul>
 <li>Type the client's email address in the Email field</li>
 <li>Click <strong>Check Mandate</strong></li>
 </ul>
-<p><strong>Option 2: GHL search</strong></p>
+<h4>Option 2: GHL search</h4>
 <ul>
 <li>Type a name or email in the search box</li>
 <li>Click <strong>Search GHL</strong> — a dialog shows matching contacts</li>
@@ -326,6 +325,64 @@ them:</p>
 </ul>
 <p><strong>Check Bank Now</strong> runs the poll immediately. Transfers that cannot be
 verified (e.g. an archive drive is offline) stay pending until the next poll.</p>
+<p><strong>Pay down plan</strong> appears on part-payment rows for clients on an active
+Direct Debit plan. It applies the bank payment to the end of the schedule:
+the DD plan is cancelled and recreated without the trailing instalments the
+payment covers, any remainder reduces the new final instalment, and the
+mandate stays active. An instalment already submitted to the bank still
+collects, and the client is emailed the new schedule — the confirmation
+dialog shows what will happen before anything runs.</p>
+<h3>Chasing overdue clients (escalation)</h3>
+<p>Overdue clients are chased automatically in stages, by how long they owe:</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Days overdue</th>
+<th>GHL tag (default)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Friendly reminder</td>
+<td>1–30</td>
+<td><code>gc-chase-1-30</code></td>
+</tr>
+<tr>
+<td>Personal contact</td>
+<td>31–60</td>
+<td><code>gc-chase-31-60</code></td>
+</tr>
+<tr>
+<td>Formal notice</td>
+<td>61–90</td>
+<td><code>gc-chase-61-90</code></td>
+</tr>
+<tr>
+<td>At risk</td>
+<td>90+</td>
+<td><code>gc-bad-debt</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Starting up</strong>: chasing starts switched <strong>off</strong>. The first daily sync shows
+  a preview of every overdue client with the tag they would get — tick the
+  rows to approve, and only those are tagged. Approving arms automatic daily
+  escalation from then on.</li>
+<li><strong>Moving up</strong>: each day a client crosses into the next stage, their old
+  stage tag is swapped for the new one — one step at a time, never re-tagged
+  twice.</li>
+<li><strong><code>gc-chase-payment</code></strong> is the umbrella tag: present whenever a client is
+  being chased in any form, and removed — along with every stage tag — when
+  they pay in full or are converted to bank payer.</li>
+<li><strong>Retries</strong>: a failed payment is only retried for temporary failures
+  (insufficient funds and similar). Retrying stops after 61 days overdue or
+  three failed attempts, after which the client is chased instead.</li>
+<li><strong>90+ days</strong> is still owed money: it stays on the Balance Due and is
+  reported separately as at-risk. Writing a debt off is a manual accounting
+  decision, not automatic.</li>
+</ul>
 <hr />
 <h2>Stats Tab</h2>
 <p>Monthly income statistics, charted from GoCardless payments that have been
@@ -480,7 +537,7 @@ transactions settle.</p>
   generic installs — the related sections are hidden and nothing runs in
   the background.</li>
 <li><strong>Desktop Shortcut</strong> / <strong>Chrome Shortcut</strong> — create/update the shortcuts.</li>
-<li><strong>Open Manual</strong> — open this user manual.</li>
+<li><strong>Open Manual</strong> — open this user manual online.</li>
 <li><strong>Exit</strong> — fully exit SideKick_GC.</li>
 </ul>
 <hr />
