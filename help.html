@@ -196,6 +196,23 @@
 <li><strong>Send Email</strong> — sends the configured email template via GHL</li>
 <li><strong>Send SMS</strong> — sends the configured SMS template via GHL</li>
 </ul>
+<h3>Putting a Plan on Hold</h3>
+<p>To pause a single plan without cancelling the mandate:</p>
+<ol>
+<li>Look up the client; their active plans are listed under the mandate.</li>
+<li>Click the plan row you want to pause, then click <strong>⏸ Put on Hold</strong>.</li>
+<li>Confirm in the dialog. SideKick_GC cancels that plan only (the mandate
+   stays active), tags the client "on hold" in GHL, and updates their
+   Payment Status.</li>
+<li>A <strong>▶ Restart Plan</strong> button appears — click it to jump to the Payment
+   Plans tab pre-filled for this client.</li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> Any instalments already submitted to the bank may still
+collect after cancellation. The client's remaining balance is not
+carried over automatically — re-enter it manually when you create the
+replacement plan.</p>
+</blockquote>
 <hr />
 <h2>Payment Plans Tab</h2>
 <p>Create instalment schedules against a customer's active mandate.</p>
@@ -232,6 +249,9 @@
 </ol>
 <blockquote>
 <p><strong>Single payments:</strong> When there is only 1 payment, SideKick_GC creates a one-off payment via the Payments API instead of an instalment schedule.</p>
+<p><strong>Re-activating a held client:</strong> Creating any new plan automatically
+clears the "on hold" tag from the client in GHL. The client's remaining
+balance is not carried over — re-enter it manually on restart.</p>
 </blockquote>
 <h3>Schedule Preview</h3>
 <p>The table shows:</p>
@@ -266,11 +286,17 @@ partial refund — with the option to extend their payment plan afterwards.</p>
 </ul>
 <hr />
 <h2>Stale Mandates Tab</h2>
-<p>Find and clean up mandates that are still active but have no remaining payment plans.</p>
+<p>One refresh scans every active mandate and splits them into two views:</p>
+<ul>
+<li><strong>Finished plans</strong> — active mandates where every payment plan has finished
+  but the Direct Debit is still live.</li>
+<li><strong>No plans ever</strong> — active mandates that never had a payment plan assigned.</li>
+</ul>
 <h3>Usage</h3>
 <ol>
 <li>Click <strong>Refresh</strong> to scan all active mandates</li>
-<li>The table shows mandates where all plans have finished, including:</li>
+<li>Pick the view you want from the sub-tabs</li>
+<li>The <strong>Finished plans</strong> table shows:</li>
 <li>Customer name and email</li>
 <li>Bank name</li>
 <li>Last payment date</li>
@@ -279,7 +305,11 @@ partial refund — with the option to extend their payment plan afterwards.</p>
 <li>Use <strong>Select All</strong> / <strong>Select None</strong> for bulk selection</li>
 <li>Click <strong>Cancel Selected</strong> to revoke them (this is <strong>irreversible</strong>)</li>
 </ol>
-<p>A progress bar shows status during both scanning and cancellation.</p>
+<p>The <strong>No plans ever</strong> table lists customer, email, created date, bank and
+mandate, with per-row actions (open in ProSelect / GoCardless / GHL / Client
+tab). Use the <strong>Created</strong> filter to show the last 6 months (default), all
+time, or a custom date range.</p>
+<p>A progress bar shows status during the scan.</p>
 <hr />
 <h2>Notifications Tab</h2>
 <p>Automatically detect when a customer's bank cancels their Direct Debit mandate and tag their GHL contact.</p>
@@ -383,6 +413,36 @@ dialog shows what will happen before anything runs.</p>
   reported separately as at-risk. Writing a debt off is a manual accounting
   decision, not automatic.</li>
 </ul>
+<h3>End of Plan Statements (review)</h3>
+<p>Reconciles completed payment plans against the PSA archive and GoCardless
+and lists what is still owed, per plan:</p>
+<ul>
+<li><strong>Band</strong> — <em>Complete</em> (nothing owed and nothing left scheduled), <em>Paid off
+  early</em>, <em>Residual</em>, <em>Refund due</em>, <em>Continues</em>, or <em>Under-scheduled</em>.</li>
+<li><strong>Owed</strong> — the reconciled balance, to a £0.01 tolerance. BACS counts as
+  money received; proposed GoCardless PSA lines and Account Corrections do
+  not.</li>
+<li><strong>Flags</strong> — human-review notes such as an Account Correction present, a
+  payment in flight, or an under-scheduled plan.</li>
+</ul>
+<p>Click <strong>↻ Run end-of-plan check</strong> to run it now, or it runs automatically
+with the poll once the feature is switched on. It is <strong>read-only</strong> — nothing
+is moved, cancelled, or sent.</p>
+<p><strong>Preview (dry run)</strong> runs the same check with the cut-over gate bypassed, so
+you can review the full candidate list before the feature is ever enabled.
+It lists every candidate with its band and evidence, exports a CSV for offline
+review, and performs <strong>zero</strong> side effects — no ledger write, no state
+change, no GHL call, nothing sent, and no Send buttons are shown. The panel
+label tells you it is a preview and the enable date a live run would have
+used. From the CLI, add <code>--preview</code> to <code>--check-plan-completions</code>
+(optionally <code>--preview-csv PATH</code>).</p>
+<p>Sending a statement is <strong>manual and email-only</strong>, and only for a <strong>Complete</strong>
+band plan: click <strong>✉ Send</strong> on that row. Every other band is display-only
+until a later release. <strong>Slice 1 cannot batch-fire</strong> — there is no auto-send,
+and the Send action exists only on Complete-band rows, one click per client.
+The feature is off until the cut-over stamp is set in
+Settings (a blank stamp means the check refuses to run — this is intentional;
+use Preview to inspect candidates before setting it).</p>
 <hr />
 <h2>Stats Tab</h2>
 <p>Monthly income statistics, charted from GoCardless payments that have been
@@ -479,6 +539,11 @@ transactions settle.</p>
   the cancellation deadline falls (min 3 working days).</li>
 <li><strong>GHL Statement Tag</strong> — tag applied to the GHL contact when sending a
   settlement statement.</li>
+<li><strong>End of Plan Statements</strong> — the cut-over for the end-of-plan review on
+  the Notifications tab. Tick <strong>Enable</strong> to switch it on (this writes the
+  cut-over stamp), set the <strong>PSA archive max age</strong> (days) for the freshness
+  gate, and leave <strong>Fully automatic</strong> unticked — Slice 1 is manual email
+  only.</li>
 </ul>
 <h3>📇 GHL</h3>
 <ul>
