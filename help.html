@@ -305,10 +305,29 @@ partial refund — with the option to extend their payment plan afterwards.</p>
 <li>Use <strong>Select All</strong> / <strong>Select None</strong> for bulk selection</li>
 <li>Click <strong>Cancel Selected</strong> to revoke them (this is <strong>irreversible</strong>)</li>
 </ol>
-<p>The <strong>No plans ever</strong> table lists customer, email, created date, bank and
-mandate, with per-row actions (open in ProSelect / GoCardless / GHL / Client
-tab). Use the <strong>Created</strong> filter to show the last 6 months (default), all
-time, or a custom date range.</p>
+<p>The <strong>No plans ever</strong> table lists customer, shoot number (the P number),
+email, created date, bank, mandate and balance, with per-row actions (open in
+ProSelect / GoCardless / GHL / Client tab). Use the <strong>Created</strong> filter to show
+the last 6 months (default), all time, or a custom date range.</p>
+<p>The <strong>Balance</strong> is what the client still owes: the ProSelect order total minus
+money actually received (card, bank transfer and so on). Scheduled GoCardless
+lines in the ProSelect album don't count, because no plan exists to collect
+them. A dash means no ProSelect data was found; £0.00 means fully paid. A
+mandate with no balance and no plan is simply a stale mandate.</p>
+<p>The ProSelect button looks up the client's shoot number, then opens their
+album. If no shoot number can be found (for example a partner set up the
+mandate, or the client booked under a maiden name or another email), a list
+shows the shoots held on the day the mandate was created. A shoot with the same
+first name is marked and listed first. Pick the right one and click <strong>Use
+selected</strong>, or choose <strong>Enter manually…</strong> to type the P number.</p>
+<p>Once you confirm, SideKick remembers the link on this PC, on the GoCardless
+mandate, and on the client's GHL contact (the GC Mandate ID and Shoot Number
+fields, and the GoCardless email as an additional email), so other PCs and the
+Notifications tab recognise the client too. Nothing is saved until you confirm.
+A line under the table reports what was saved. SideKick never overwrites a
+different value already on the GHL contact and never creates a contact; if
+the contact isn't found or already has a different shoot, it says so. The Shoot
+and Balance columns update.</p>
 <p>A progress bar shows status during the scan.</p>
 <hr />
 <h2>Notifications Tab</h2>
