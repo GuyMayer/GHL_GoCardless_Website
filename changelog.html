@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SideKick GC Changelog</title>
+<style>
+  :root {
+    --bg: #16181d;
+    --panel: #1f2229;
+    --border: #323641;
+    --text: #e6e8ee;
+    --muted: #9aa1ae;
+    --accent: #4f8cff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    font-size: 16px;
+  }
+  .bar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    z-index: 10;
+  }
+  .bar h1 { font-size: 17px; margin: 0; flex: 1; font-weight: 600; }
+  .bar a { color: var(--accent); text-decoration: none; font-size: 13px; }
+  .bar a:hover { text-decoration: underline; }
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+  h1, h2, h3, h4 { color: #fff; line-height: 1.3; }
+  h1 { font-size: 1.9em; border-bottom: 1px solid var(--border); padding-bottom: .3em; }
+  h2 { font-size: 1.45em; margin-top: 1.6em; border-bottom: 1px solid var(--border); padding-bottom: .2em; }
+  h3 { font-size: 1.15em; }
+  a { color: var(--accent); }
+  code {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+  }
+  ul { padding-left: 1.5em; }
+  li { margin: .35em 0; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <h1>SideKick GC Changelog</h1>
+  <a href="https://dd.ghl-sidekick.com/changelog.html" target="_blank" rel="noopener">Live version</a>
+</div>
+<main>
+<h1>SideKick_GC Changelog</h1>
+<h2>1.13.0 (2026-11-04)</h2>
+<ul>
+<li><strong>Fix: settings silently lost on customer machines.</strong> Every settings save handler swallowed write errors, and compiled builds searched the exe folder for <code>SideKick_GC.ini</code> before <code>%APPDATA%</code> — so a customer's edit could be written to a file that was never re-read, or fail on a read-only install folder, with no error shown. Compiled builds now read and write <code>%APPDATA%\SideKick_GC\SideKick_GC.ini</code> only; an INI found next to the exe is imported once, then archived as <code>.stale-&lt;timestamp&gt;</code>. Every save failure now logs and shows a one-shot warning.</li>
+</ul>
+<ul>
+<li><strong>About → Diagnostics card.</strong> New controls on the About tab: <strong>Save Diagnostic Report</strong> (sanitised report to the Desktop and log folder), <strong>Send Logs</strong> (uploads report and recent error logs to a private Gist for support), <strong>Open Log Folder</strong>, and <strong>Email Guy</strong>. The <strong>Automatically send error reports</strong> checkbox (off by default) makes future failures report themselves — no manual steps needed. Reports never contain credentials, tokens, or client data.</li>
+</ul>
+<ul>
+<li><strong>Show Changelog button.</strong> Settings → Application now has a <strong>Show Changelog</strong> button under <strong>Open Manual</strong>, opening the release notes in the browser (hosted alongside the manual).</li>
+</ul>
+<ul>
+<li><strong>Lead Flow bridge — live-API fixes (2026-11-04).</strong> Verified against the first real Lead Flow booking: the poller's opportunity query now sends <code>pipeline_stage_id</code> (the API rejects <code>stage_id</code>), <code>Session Type</code> resolves its picklist from <code>picklistOptions</code>, missing <code>LF-</code> stamp fields are reported per booking instead of silently skipped, and DEST appointments keep the source's real end time. Tests in <code>tests/test_leadflow_bridge.py</code>.</li>
+</ul>
+<ul>
+<li><strong>Lead Flow bridge — first live transfer (2026-11-04).</strong> Fixed the three blockers the real booking exposed: naive <code>startTime</code> values (<code>2027-01-27 10:00:00</code>) are treated as UTC instead of crashing the future-appointment filter; calendar creation now uses the v3 route <code>POST /calendars/events/appointments</code> (the legacy route 404s and the old route rejects V3 calendars); and team calendars get an <code>assignedUserId</code> resolved by matching the source staff name against DEST users.</li>
+</ul>
+<ul>
+<li><strong>Lead Flow settings page — manual poll + recent clients + master prompt (2026-11-04).</strong> A <code>▶ Poll now</code> button runs the poll immediately (no timer wait) and a <code>🕘 Recent clients</code> pop-up shows the last five polled clients with their transfer status (ledger <code>recent</code> log). The enable checkbox stays clickable when the Application master switch is off and offers to turn the master on for you instead of silently locking the page.</li>
+</ul>
+<h2>1.12.0 (2026-11-03)</h2>
+<ul>
+<li><strong>Plan-correction warning SMS.</strong> Every payment-plan correction (hold, failed-payment extend, pay-down, DD-to-bank conversion, refund-driven replacement, and the CLI mutation verbs) now sends the client a short apology SMS and applies the <code>gc-plan-correction</code> GHL tag first — so the GoCardless emails that follow a correction never come as a surprise. Configured via Settings → Notifications (new <strong>Plan Correction SMS</strong> and <strong>Plan Correction Tag</strong> rows); wording draft and one-time GHL template setup steps in the README.</li>
+</ul>
+<ul>
+<li><strong>Once-per-client-per-day ledger.</strong> A ledger at <code>%APPDATA%\SideKick_GC\correction_warning_state.json</code> dedupes warnings by <code>contact_id|date</code>, so cancel+recreate, batch auto-extends, or repeat corrections on the same day produce exactly one text. Concurrency-safe (reserve-before-send, atomic saves).</li>
+</ul>
+<ul>
+<li><strong>Manual replacements ask first.</strong> The Payment Plans / Payments tabs add a default-off "Send correction warning SMS first" checkbox; CLI mutations warn by default and accept <code>--no-correction-warning</code> to skip. Warnings are best-effort — a GHL failure never blocks the correction and nothing is written to stdout.</li>
+</ul>
+<ul>
+<li><strong>Fix: GHL API key / Location ID wiped.</strong> The bulk Settings save (tab change and exit) wrote the GHL credentials from the fields even when they were empty, blanking the stored key and location. It now only saves when both are filled; clearing a field by hand still works.</li>
+</ul>
+<ul>
+<li><strong>Fix: Settings lost on restart.</strong> Opening Settings fired the instant-save handlers mid-load, which wrote still-empty tag combos back to the INI (Chase 31-60 / 61-90 / Bad Debt tags were blanked every launch). The Overdue Days and Debt Bucket field mappings were also never loaded into their dropdowns, so any later save wrote them blank. All instant-save combos are now signal-blocked during load and the two missing mappings are loaded.</li>
+</ul>
+<ul>
+<li><strong>Lead Flow moved into Settings.</strong> The top-level "Lead Flow" tab is gone; Lead Flow now lives only under Settings, in the side menu directly below GHL, using the GHL page's group-box layout.</li>
+</ul>
+<ul>
+<li><strong>Lead Flow dropdowns.</strong> SOURCE pipeline and stage, DEST pipeline, stage, calendar and the guard tag are now the usual search / <code>(refresh)</code> / select dropdowns instead of free-text boxes. <code>(refresh)</code> reloads the live pipelines, calendars and primary-account tags from GHL; picking a new pipeline reloads its stages. The guard tag stays editable so a tag not yet in GHL can be typed.</li>
+</ul>
+<ul>
+<li><strong>Lead Flow master switch.</strong> A new "Sync Lead Flow" checkbox on Settings → Application is the single master switch for the Lead Flow bridge, bound to the same <code>leadflow_enabled</code> config field as the Lead Flow page's own enable checkbox (changing either updates the other). When off, the poller stays stopped and the Settings → Lead Flow page is deactivated with a "Sync Lead Flow is off in Settings → Application" hint.</li>
+</ul>
+<ul>
+<li><strong>Lead Flow → primary GHL bridge (2026-11-02).</strong> SideKick_GC can now poll the Lead Flow GHL account every 15 minutes for "Shoot Booked" opportunities and copy each booking into your primary GHL account: contact upsert with <code>LF- Source Contact ID</code> + <code>LF- Staff</code>, a <code>LF- Lead Flow Client</code> guard tag applied before the calendar entry, an AI-written Session Story, a Studio Boudoir appointment, and a <code>#16: BOOKED!</code> opportunity. New Settings → Lead Flow tab (enable, source pipeline/stage, calendar, guard tag, token test). Call-recording capture into toypi's <code>calls.db</code> is stubbed and lands as a separate piece before go-live.</li>
+</ul>
+<ul>
+<li><strong>AI Chat settings — bigger, centred, smarter (2026-11-02).</strong> The Settings → AI Chat card is capped at 1080px and centred; the System Prompt preloads and grows to fit (no scrolling); a new Story Writer Prompt holds the client-story wording rule; the AI Chat tab hides when no API key is set; and the provider choice now persists correctly (unknown providers were silently dropped on load).</li>
+</ul>
+<ul>
+<li><strong>Weekend-aware charge dates.</strong> <code>_safe_charge_date</code> and the silent plan builder now roll weekend payline dates forward to the next working day, so the schedule GoCardless returns matches the dates SideKick holds in the <code>.psa</code>. Previously GoCardless silently shifted a Sunday first date to Monday at the API boundary and SideKick appended a duplicate first payment (Papworth P26093P, Sunday 15/11 → Monday 16/11, 2026-11-02).</li>
+</ul>
+<ul>
+<li><strong>Duplicate GoCardless customer detection (2026-11-02).</strong> <code>api._find_customer_by_email</code> is now <code>_find_all_customers_by_email</code> and returns every customer matching the email instead of stopping at the first. <code>check_customer_mandate</code> reports the count on <code>MandateCheckResult.duplicate_customer_count</code>, and the CLI (<code>--check-mandate</code>, <code>--check-mandate-by-name</code>) appends a <code>|n</code> field when the email has more than one customer. The ProSelect button warns when it finds duplicates, so an empty extra mandate gets cancelled instead of silently checking the wrong customer record.</li>
+</ul>
+<h2>v1.11.0 — Mandates tab rework, GHL wizard fix, faster launch (2026-10-28)</h2>
+<ul>
+<li><strong>Shoot number can live on the GoCardless mandate (2026-11-02).</strong> A mandate's <code>shoot_ref</code> metadata is now read first when SideKick looks up a client's shoot (Mandates, Notifications, balances). This covers clients whose GoCardless name and email differ from the studio's, with no plan to carry the reference. <code>api.set_mandate_shoot_ref()</code> writes it; Sally Shepherd's mandate was linked to P26093P (booked as Papworth — same address in the ProSelect album).</li>
+<li><strong>Confirm-the-shoot list and GHL link for mismatched clients (2026-11-02).</strong> When a mandate's shoot can't be found automatically (a partner paying, a maiden name, a different email), the ProSelect button now lists the shoots held on the day the mandate was created (or the day before) — matched by date only, with a same first name flagged — and you pick the right one, or enter it manually. The confirmed link is saved on this PC, on the GoCardless mandate, and on the GHL contact (GC Mandate ID and Shoot Number fields, plus the GoCardless email as an additional email — the same fields used when someone else pays). GHL values that already differ are never overwritten, and no GHL contact is ever created. New <code>match_bank_transfers.py --on-date</code>.</li>
+<li><strong>Mandates "No plans ever": Shoot column and manual shoot number (2026-11-02).</strong> A new <strong>Shoot</strong> column (the P number) sits next to Customer. When the ProSelect button can't find a client's album automatically — the name or email changed since the shoot, for example a married name — it now asks for the shoot number once, remembers it (<code>%APPDATA%\SideKick_GC\shoot_overrides.json</code>), also stores it on the GoCardless mandate so every PC resolves the client, and opens the album; the Balance then uses that shoot too.</li>
+</ul>
+<ul>
+<li><strong>Mandates "No plans ever": ProSelect button and real Balance (2026-11-02).</strong> The ProSelect icon on mandate rows was permanently greyed out. It now finds the client's shoot (GHL Shoot Number field, then GoCardless, then the PSA archive by surname or email), locates the <code>.psa</code> and opens it; failures show in the status line under Refresh. The Balance column was showing £0.00 for clients who owe money, because PSA GoCardless DD lines were counted as paid even though no GC plan exists. Balance is now order total minus real (non-GoCardless) payments dated today or earlier, the same rule as end-of-plan statements; the Xero-history fallback follows the same rule.</li>
+</ul>
+<ul>
+<li><strong>GHL Setup Wizard now keeps and links field mappings (2026-10-28).</strong> A beta tester found every mapping showed (None) after running the wizard. The Payment Status opportunity picklist now sends <code>options</code> as plain strings — GHL rejected the old <code>textBoxListOptions</code> payload with "options must contain at least 1 elements" (verified live 2026-10-28). GHL fields and tags that already exist are now linked into empty settings slots only; existing user mappings are never overwritten. Overdue Days and Debt Bucket mappings are now saved. A tag configured for several slots maps to all of them and is created once. The result page reports how many existing fields and tags were linked.</li>
+<li><strong>Faster launch — fewer reads on start-up (2026-10-27).</strong> The Notifications tab skips its automatic poll if it was polled within the last hour (the timestamp persists across restarts), and the refresh no longer blocks the window. The Mandates tab renders from cache on first show and displays a Loading indicator while a background sync runs.</li>
+<li><strong>Mandates Balance column and date format (2026-10-27).</strong> The Balance column shows order value minus deposit (live PSA, falling back to Xero history; a dash when there is no data). Column order is aligned across the sub-tabs, and customer resolution now uses <code>linked.customers</code>. Date fields show as YYYY-MM-DD across all tabs.</li>
+<li><strong><code>--next-charge-date</code> CLI verb (2026-10-27).</strong> <code>--next-charge-date &lt;email&gt;</code> prints <code>NEXT_CHARGE_DATE|YYYY-MM-DD</code>. Charge-date checks now use a 4-working-day BACS lead (weekends skipped); bank holidays are left to GoCardless.</li>
+<li><strong>Mandate history cache (2026-10-27).</strong> Historical mandate records are cached locally, and the Client tab surfaces balances still owed on inactive mandates.</li>
+<li><strong>Mandates tab — two views, one scan (2026-10-27).</strong> The Stale Mandates tab is now a single-refresh, two-view <strong>Mandates</strong> tab: <strong>Finished plans</strong> (the previous stale list — all plans finished, Direct Debit still active) and <strong>No plans ever</strong> (active mandates that never had a payment plan). One refresh runs a single sweep over every active mandate and buckets it into the two lists, so the mandate list and each mandate's plans are fetched once, not twice. The "No plans ever" view has a created-date filter (Last 6 months / All time / Custom) and per-row action buttons (ProSelect / GoCardless / GHL / Open Client / Send Statement) shared with the Notifications tab.</li>
+</ul>
+<h2>v1.10.0 — Shoot-reference mandate lookup, end-of-plan statements (2026-10-26)</h2>
+<p>&gt; Also rolls up everything since v1.8.0: the code was already stamped 1.9.0</p>
+<p>&gt; but that version never got its own changelog entry.</p>
+<ul>
+<li><strong>Shoot-reference mandate fallback (Client tab, 2026-10-26).</strong> When an email/name lookup finds no GoCardless customer, the Client tab now resolves the client's shoot number (from GHL by contact id, email, or first/last name) and scans GoCardless subscription/instalment-schedule names for that reference. This loads the paying partner's mandate when the bill sits under someone else's name keyed by shoot number (e.g. <code>Zoom-Photography-P26082P_…</code>), so a statement can still be sent. The scan shows an indeterminate progress bar with status messages and is scoped to the last 3 years via <code>created_at[gte]</code> — GoCardless list endpoints reject a bare date, so the filter uses RFC 3339 (<code>T00:00:00Z</code>). Also stops the "paid in full" preview from rendering on a client with no mandate at all. Shoot-ref extraction moved to <code>shoot_ref.py</code> (shared by <code>api.py</code> and <code>gui/workers.py</code>). Tests aligned: <code>test_clear_chase_tags</code> (GC-Extension is now a never-stripped marker), <code>test_payment_charge</code> (name lookup no longer fetches payment history), and <code>test_startup_integrity</code> (13-field GHL registry).</li>
+<li><strong>Mandate invite now passes currency and scheme to GoCardless (2026-10-26).</strong> Sending a client invite ("New Mandate Request", or the SideKick_PS GoCardless toolbar → Send Request) failed with <code>422 This functionality is not supported for the given currency</code> because <code>create_billing_request_flow</code> posted an empty <code>mandate_request</code>. This account is multi-currency, so GoCardless cannot resolve a currency at creation time. The request now carries the configured currency (default GBP) and scheme (bacs for GBP, sepa_core otherwise).</li>
+<li><strong>End-of-plan statements — detection, reconciliation and manual send (SLICE 1, 2026-10-25).</strong> New read-only end-of-plan sweep reconciles completed payment plans against the PSA archive and GoCardless, lists what (if anything) is still owed, and shows the evidence behind each figure. PSA paylines are classified by method NAME first — the real export writes <code>GoCardless DD</code> lines carrying methodID 13, so ID-first precedence misread every live schedule as an Account Correction. BACS counts as money received (it is a bank transfer); proposed GoCardless lines and Account Corrections do not. Balances compare to a £1.00 tolerance, because the first instalment of a GoCardless plan is rounded against an exact PSA figure and sub-pound drift is expected. A failed PSA lookup bands as <code>unresolved</code> and is never treated as money owed or owed back. Plans resolve to a PSA shoot by the reference embedded in the GoCardless plan name, then email, then unique surname; when those disagree the row is refused for a human decision rather than guessed. Manual statement send is limited to the Complete band (email only, no cancellation, no money movement) and uses a data-driven renderer with complete / refund-due / balance-settled blocks. A preview mode (<code>--preview</code>, <code>--preview-csv</code>) lists every candidate with zero side effects, so the feature can be reviewed before it is ever enabled. Gated by a cut-over stamp — blank means OFF. The <code>--check-plan-completions</code> CLI verb exposes the same sweep headlessly.</li>
+<li><strong>Charge-date failure carries a NEXT_CHARGE_DATE hint (2026-10-23).</strong> When silent plan creation fails because a payment date is before the mandate's <code>next_possible_charge_date</code>, the error output now includes a <code>NEXT_CHARGE_DATE|&lt;YYYY-MM-DD&gt;</code> line (the ERROR line text is unchanged). SideKick_PS reads this hint to offer a one-click fix that moves the first payment to the earliest valid date.</li>
+<li><strong>Client-tab "Put on Hold" (2026-10-23).</strong> The Client tab now lets you pause a single plan directly from the GUI. Click <strong>⏸ Put on Hold</strong> on a selected plan to cancel that plan only (the mandate stays active), apply the GHL <code>gc-on-hold</code> tag, and write the Payment Status. A <strong>▶ Restart Plan</strong> button then navigates to the Payment Plans tab pre-filled for the client. Creating any new plan — via the GUI or the <code>--silent</code> CLI path — clears the hold tag automatically.</li>
+<li><strong>Credentials and INI writes are now atomic with self-heal (2026-10-21).</strong> <code>credentials.json</code> and the INI were written non-atomically with no backup, so a truncated write could silently empty them — wiping the GHL key, GoCardless token, Nordigen secrets and the bank-feed provider selection. <code>config.py</code> now routes every write through <code>_atomic_write_text</code> (temp file + <code>os.replace</code>, with a <code>.lastgood</code> backup) and restores a truncated file from <code>.lastgood</code> on load.</li>
+<li><strong>Three-year sync cut-off (2026-10-17).</strong> The daily GHL sync now fetches mandates only from a cut-off date forward — nothing older is synced, updated, or escalated. Defaults to three years back; a "Look back from" date field on the Notifications tab (GHL Daily Sync panel) changes it and persists as <code>SyncCutoffDate</code>.</li>
+<li><strong>Escalation respects the settings toggle (2026-10-17).</strong> While escalation is disarmed the daily sync no longer pops the approval preview — candidates are cached and skipped with a status note. A manual "Show overdue candidates" button reviews the latest cached list; approving ticks the chosen rows and arms automatic escalation. The preview table matches the other tables: striped rows, selectable and copyable (Ctrl+C / right-click), auto-width columns, and a Save to CSV button.</li>
+<li><strong>Bank poll no longer buries unmatched transfers (2026-10-16).</strong> A transfer the poll couldn't match on first sighting was ledger-marked <code>unmatched</code> and permanently excluded from every later poll. Remittance text often arrives only after booking, so a later-matchable payment could silently miss its statement and PSA payline — one payer's six weekly bank payments went unseen for two months and her statements kept showing the stale balance. First-sighting <code>unmatched</code> candidates are now held for re-evaluation on the next polls; only the explicit dismiss records them. The record chain also re-reads the live PSA balance after each payline write before building the statement, so batch-recorded payments show the true running balance and GHL Balance Due ends correct, and auto-record batches now run one chain at a time so each re-read sees the previous payline already written.</li>
+<li><strong>Bank Transfers table matches the events table (2026-10-16).</strong> The transfers table now grows with its rows (the 190px clamp is gone), rows are selectable and copyable (Ctrl+C / right-click, like the other tables), and the per-row text buttons are replaced with the same flat icon set as the events table — record + statement, pay down plan, open client, dismiss — left-aligned in the cell.</li>
+<li><strong>Notifications table overhaul (2026-10-15).</strong> Bank-payer clients are hidden from the events table (email + GHL contact-id matching against <code>bank_payers.json</code>; the store now carries each payer's email, backfilled by one batched GHL scan per refresh). Failed-payment rows now show the client's WHOLE GoCardless history: Payments <code>made/total</code>, a Collected column (GC gross collected + non-GC PSA paylines — deposits/BACS/card, GC DD lines excluded) and Total = the PSA order total when known (fallback: GC plan total). Figures refresh every poll cycle. The Status column is renamed Pay Plan Status and reflects the plan's status (Cancelled/Active), plus a new Chase Progress ageing column (1-30 / 31-60 / 61-90 / 90+ bad debt). Customer names colour by payment age (yellow/orange/red; bank-payer names green/orange/red by last bank payment). New per-row GoCardless button opens the customer in manage.gocardless.com; details shorten to "Insufficient funds" / "Mandate cancelled by client" with the full sentence otherwise; rows are selectable and copyable (Ctrl+C / right-click). Weekly payers are no longer chased per failed weekly payment — failures are held (<code>⏸ Month OK — held</code>) while the month has had successes and are released only when a whole month fails or at the end of the term, when they are added at the end as normal makeups.</li>
+<li><strong>Shoot-number fallback chain.</strong> Missing shoot numbers now resolve via a five-leg chain: GHL search, a paginated GHL contact scan (matches any contact email including additional emails, or the GC Mandate ID custom field — the reliable join when GC is in a partner's name), GC plan name/metadata, PSA archive surname, then PSA OrderList email (catches maiden/married folder-name drift). Found refs are written back to the GHL Shoot Number field. <code>match_bank_transfers.py</code> gains <code>--surname</code>/<code>--email</code> lookups; the new <code>ShootResolveWorker</code> replaces the GHL-only worker.</li>
+<li><strong>Statement deadline roll-forward.</strong> When a payment's cancellation deadline has passed, the statement no longer reports the past date — the status line, BACS deadline row, and message footer all roll forward to the next cancellable payment (e.g. "Settle by 12 Nov (16 Nov payment)"), and the footer month follows the rolled payment. With nothing cancellable left, the deadline shows "—" and the footer drops the dated sentence.</li>
+<li><strong>Who-owes-money overhaul.</strong> New pure module <code>collectability.py</code> is the single source of owed/aging/escalation maths. Ended plans now report <code>owed = plan principal − collected</code> (with refunds subtracted; charged-back and late failures excluded by status) instead of a line-sum, so a client converted to bank payer after partial DD success shows the true remainder. Active plans keep arrears semantics (failed + in-flight makeup). New soft / hard decline split on the GoCardless failure cause — only soft causes (<code>insufficient_funds</code>, <code>refer_to_payer</code>, <code>bank_account_transferred</code> on an active mandate) auto-retry, and retries stop at 61 days overdue or 3 failed attempts. New A/R aging buckets (current / 1-30 / 31-60 / 61-90 / 90+) with automatic escalation tags <code>gc-chase-1-30</code>, <code>gc-chase-31-60</code>, <code>gc-chase-61-90</code>, <code>gc-bad-debt</code> (Settings-overridable) and optional new GHL contact fields Overdue Days + Debt Bucket. <code>NotifyChaseTag</code> becomes an umbrella "being chased: yes/no" flag kept in step with the bucket tags. Escalation starts disarmed: the first daily sync shows an approval preview in Notifications, and only approved rows are tagged. The daily sync now also pages cancelled/failed mandates and paginates payments at 500.</li>
+<li><strong>BACS pay-down (S10).</strong> A new "Pay down plan" button on bank-transfer rows for clients on an active DD plan applies the bank payment to the _tail_ of the schedule: the schedule is cancelled and recreated without the trailing instalments the payment covers, any remainder reduces the new final instalment (per-instalment amounts supported in <code>create_instalment_schedule</code>), and a single remaining instalment becomes a one-off. The mandate is never touched; already-submitted instalments still collect and are reported. New <code>PayDownPlanWorker</code> + <code>collectability.pay_down_tail</code>.</li>
+<li><strong>Bank Payers table fixes.</strong> Blank-shoot payers are now displayed and their shoot number resolved from the GHL contact (no more silent skip); the Date column falls back to the identified date; disabled ProSelect / Send Statement buttons explain why; conversion stores the principal−collected figure and resolves the shoot number from the GHL contact.</li>
+<li><strong>Convert DD mandate payer to bank payer.</strong> New one-click conversion, from the Notifications top-table Actions column (new bank-building icon) and from the Client tab (<code>🏦 Convert to Bank Payer</code>). A confirmation dialog spells out exactly what happens: cancels the active GoCardless plan(s) but <strong>keeps the mandate</strong>, stops the debt-chase email sequence, moves the client to the ad-hoc Bank Payer list, removes the chase tags (<code>NotifyCancelTag</code> + <code>NotifyChaseTag</code>) and adds the new <code>NotifyBankPaidTag</code> (<code>gc-bank-paid</code> default) in a single GHL tag write. New <code>ConvertMandatePayerWorker</code> + <code>ConvertMandatePayerDialog</code>; new Settings field "Bank Paid Tag".</li>
+<li><strong>Fixed: Client-tab statement dropped the deposit and the makeup payment.</strong> Selecting a plan filtered payments to those GoCardless links to it, but the deposit (<code>&lt;plan&gt; - Deposit</code>) and a makeup payment (<code>Makeup payment: &lt;date&gt;</code>) are created unlinked, so the statement showed fewer payments, a lower total and "PAID IN FULL / £0 remaining" while a makeup was still due. New <code>api._payments_for_plan()</code> also keeps those two unlinked kinds (makeup only when its date matches one of the plan's own payments).</li>
+<li><strong>Fixed: balance / progress / plan end inflated by deliberately cancelled plans.</strong> <code>get_mandate_gc_summary</code> and the daily GHL sync both counted every <code>cancelled</code> payment as owed, so a client who changed order (old plans cancelled, new plan on the same mandate) showed e.g. Balance £4,856.66, 5/49 and a 2028 plan end in GHL. New shared <code>api.summarize_mandate_payments()</code>: cancelled payments only count when the mandate itself is dead; a failed payment replaced by a live "Makeup payment" is one instalment, and the in-flight makeup counts as owed until collected. Daily sync now uses it (mandate status taken from the mandate list).</li>
+<li><strong>Fixed: "all our tags vanished" (4th recurrence) — the test suite was overwriting the live <code>SideKick_GC.ini</code>.</strong> <code>GCConfig()</code> with no INI path falls back to a relative <code>SideKick_GC.ini</code>, and <code>load_config()</code> finds the project INI via <code>SCRIPT_DIR</code>, so tests that saved settings rewrote GHL field mappings, tags and templates with blanks (and, via <code>save_all()</code>, the GHL API key in the keyring/<code>credentials.json</code>). New <code>tests/conftest.py</code> sandboxes cwd, <code>%APPDATA%</code>, <code>config.SCRIPT_DIR</code> and the keyring for every run. Documented in <code>.github/instructions/SideKick_GC.instructions.md</code> §12a.</li>
+<li><strong>Notifications tables unified</strong>: the events table and Bank Payers table now share one column layout (Date, Customer, Email, Shoot, Status, Details, Payments, Amount, Total, GHL Tag, Actioned, Actions) — columns with no data for a table stay blank. The last Actions column holds four icon buttons on both tables: ProSelect, GHL, Open Client and Send Statement (+ ✕ on bank payers). Send Statement on an events row reads the shoot's PSA balance, asks for confirmation, then sends the owing statement; disabled on completed plans and when the shoot/GHL contact/message field is unknown.</li>
+<li><strong>Notifications table</strong>: Payments (<code>6/9</code>), Amount, Total, Shoot and an Open column (ProSelect / GHL buttons) plus an "Updating current data…" progress bar; <strong>Settings</strong>: About moved into the side menu (opens on it), "Open on launch" tab dropdown (<code>DefaultTab</code>), vertical Application buttons.</li>
+<li><strong>Bridge rate-limit burst guard</strong>: GoCardless, GHL and Light Blue bridges now enforce a thread-safe minimum interval between consecutive calls (shared 300ms for GC/GHL via <code>BRIDGE_MIN_INTERVAL_S</code>, dedicated 1.5s for Light Blue via <code>LB_MIN_INTERVAL_S</code>), replacing the per-worker 1.5s drips; GHL 429 Retry-After retry behaviour is unchanged; the Daily Sync worker's hand-rolled GoCardless calls now go through the bridge (CONTRACT.md compliance); new <code>gocardless_core/throttle.py</code>; policy documented in <code>gocardless_core/CONTRACT.md</code>.</li>
+<li><strong>Bank-transfer statement reference</strong>: owing statements now quote the numeric part of the shoot reference (<code>P26027P</code> → <code>26027</code>) on the "Reference" line clients use when paying by bank transfer — new <code>shoot_ref_digits()</code> helper (<code>bank_payers.py</code>) applied to both the Client-tab and Notifications-tab owing-statement builders. The Client tab also adopts the shoot from the bank-payer record (<code>_show_bank_payer_statement</code>), so a payer's statement quotes the shoot instead of the surname fallback and the PSA balance refresh runs. Previously the full shoot ref (or the surname) was shown.</li>
+<li><strong>Starling bank-feed provider</strong>: Settings → Bank Feed now has a provider dropdown — Nordigen (unchanged Metro feed) or Starling. Starling mode reads balances + transactions directly from the Starling API (personal access token, read-only scopes) and caches them in <code>%APPDATA%\SideKick_GC</code>, so the Banking tab works on an exe-only machine with no SideKick_Xero ledger. Amounts are normalised from unsigned minorUnits + direction, SETTLED-only, UPSERTed by feedItemUid, with a 5-minute <code>changesSince</code> overlap and 429 Retry-After back-off.</li>
+<li><strong>Worker shutdown join (fix)</strong>: app exit now requests interruption and joins running worker QThreads — <code>shutdown_workers()</code> in <code>workers.py</code>, called from <code>MainWindow.closeEvent</code> — and <code>PsaBalanceWorker</code> polls its subprocess so it can stop early on shutdown. Closes a production exit path that could abort (<code>0xC0000409</code>) by destroying a live worker thread.</li>
+<li><strong>Amend / Defer date preservation (fix)</strong>: deferring a schedule whose paylines have weekend-adjusted days (21st with occasional 22/23) no longer splits the plan into a deposit + shifted schedule. The first payment now splits only on a differing amount, and every payline's explicit date is preserved verbatim through schedule creation. Live bug: P26102P defer jumped Oct → Dec and flattened all dates to the 23rd.</li>
+<li><strong>Amend / Defer payment-plan flow (CLI verbs for SideKick_PS)</strong>: new <code>--reconcile-plans &lt;mandate&gt;</code> (per-plan paid/total/dates for the PSA double-check), per-plan by-ID <code>--cancel-plans-for &lt;plan_id&gt; [--apply-cancel-tag]</code>, and <code>--apply-hold &lt;plan_id&gt;</code> — cancelling only the plan the reconcile step matched (never mandate-wide), then applying configurable <code>gc-on-hold</code> / <code>gc-plan-cancelled</code> tags and updating the Payment Status field. GoCardless cannot amend a schedule's dates (update = metadata only), so deferrals are cancel + recreate with <code>--bump-months</code>.</li>
+<li><strong>PROPER-cased addresses on Light Blue sync</strong>: the sync payload now title-cases every address word (<code>18 the cedars</code> → <code>18 The Cedars</code>, <code>harpenden</code> → <code>Harpenden</code>) via the new <code>proper_address</code> helper, reusing the <code>Mc</code>/<code>O'</code>/hyphen rules. Street, city, and county previously passed through <code>ascii_clean</code> untouched.</li>
+<li><strong>Single Stage-2 provider (SimplyPostcode)</strong>: getAddress.io was dead weight — its original operator ceased UK operations in Feb 2026 (High Court ruling) and the reincarnated service 401s on every endpoint except <code>/get</code>. The Postcode page now shows one provider: the dropdown is gone, SimplyPostcode (Royal Mail PAF) is the single key field, and <code>PostcodeAddressProvider</code> defaults to <code>simplypostcode</code>. The setting and the getAddress plumbing behind it are kept deliberately — dormant, but the seam for a provider picker and loadable per-provider setting packs without a future config migration.</li>
+<li><strong><code>[saved]</code>-prefix tag combos</strong>: Light Blue's trigger-tag combo and both Notifications combos (cancel-tag, completed-tag) now show <code>[saved] &lt;tag&gt;</code> when the saved value hasn't been confirmed against a live GHL fetch (deleted/renamed/not-yet-fetched) — matching the GHL Field Mapping page convention. <code>currentData()</code> holds the clean value so the prefix is never persisted on save.</li>
+<li><strong>Narrower cards</strong>: Payments tab capped to 400px; Payment Plans left column (Plan Details + Downpayment) capped to 500px.</li>
+</ul>
+<h2>v1.8.0 — Postcode write-back (2026-09-19)</h2>
+<p>&gt; Native replacement for the dead Zapier/Sheets postcode pipeline. When a</p>
+<p>&gt; GHL contact is tagged, SideKick_GC looks up the postcode or full address</p>
+<p>&gt; and writes the corrected details back onto the contact (the write-back</p>
+<p>&gt; direction — Light Blue sync reads GHL, this writes GHL).</p>
+<ul>
+<li><strong>Stage 1 — Lead Area</strong> (postcodes.io, free): lead tagged with only a postcode → normalised <code>postalCode</code>, county/state, country, whole-mile <code>Distance</code> (crow-flies vs studio origin LU7 0JL), optional out-of-area auto-tag (default on, 25-mile proxy for the "1 hr drive +" rule). City is never written (postcodes.io has no town field).</li>
+<li><strong>Stage 2 — Client Address</strong> (SimplyPostcode PAF + Google Distance Matrix): contact tagged on registration with a first-line address → Royal Mail PAF address (address1/town/county/postcode/country), sanitised names/email/phone (fancy-Unicode→ASCII, PROPER + Mc/O'/hyphen, title strip, +44 phone — the legacy sheet transforms), PostZon distance converted to miles, and Google Drive Time ("37 mins" format; skipped gracefully when no key or no route). Reuses the existing <code>Distance</code>/<code>Drive Time</code> custom fields — this feature is now the upstream producer Light Blue sync reads.</li>
+<li><strong>Address provider choice</strong> (new in this build): Stage 2 defaults to the free <strong>getAddress.io</strong> provider (Autocomplete → Get, ~20 lookups/day free tier) so new users need no paid subscription; SimplyPostcode remains selectable for Royal Mail PAF under Guy's paid sub. ONE key field + Test + <strong>Get key →</strong> follows the selected provider (the key is stored per provider internally, autosaves on focus-out, and the link opens that provider's signup page). Drive time keeps its own Google Maps key row (a different service with a different key).</li>
+<li><strong>Two-stage poller</strong> mirroring Light Blue sync: QTimer + QThread per stage, ledger diff on <code>&lt;contact_id&gt;|&lt;tag&gt;</code> with first-run bootstrap (offline catch-up — GHL tags persist until removed), write-on-change (no PUT when values already correct), 1.5 s drip, bounded failure retry (3 consecutive fails → permanent), 90-day ledger prune. Stage 2's timer is staggered 90 s to avoid concurrent contact writes with the mandate sync.</li>
+<li><strong>All GHL traffic via <code>GhlClient</code></strong> (bridge constraint); out-of-area tag via the dedicated Add Tag endpoint (<code>POST /contacts/{id}/tags</code> — <code>tags</code> in a PUT is full-replace).</li>
+<li><strong>Settings → Postcode page</strong>: one enable toggle and one shared poll interval for both stages, stage 1/2 trigger-tag pickers (live GHL tag refresh, <code>[saved]</code> convention), studio origin, out-of-area threshold + tag, out-of-area icon field (writes the legacy sheet's "🚨🚗" emoji), SimplyPostcode datakey + Google Maps key with live Test buttons and focus-out autosave (plus flush on window close) — no Save buttons. Keys stored via keyring/credentials.json — never the INI. Settings pages scroll instead of growing the window past the screen.</li>
+<li><strong>Shared sanitisation module</strong> (<code>sanitize.py</code>): pure helpers extracted from <code>lightblue_formatter.py</code> (public surface unchanged) plus the legacy sheet transforms; both features import from it.</li>
+<li><strong><code>defusedxml</code></strong> for SimplyPostcode XML parsing (added to requirements.txt); <code>postcode_lookup</code> soft-block feature entry in the GHL scope report.</li>
+<li>SimplyPostcode endpoints/datakey recovered from the old workbook formulas and live-verified (1,319 Full PAF + 1,947 PostZon credits on the key); <code>_Scripts/save_postcode_keys.ps1</code> saves both keys to PC2 credentials.json + toypi secrets.env after live verification.</li>
+</ul>
+<h2>v1.7.0 — Light Blue sync (2026-09-18)</h2>
+<p>&gt; Native replacement for a broken Zapier Zap (LeadConnector "Pipeline Stage</p>
+<p>&gt; Changed" trigger — a known bug that silently stops firing, no fix ETA).</p>
+<p>&gt; When a GHL contact is tagged with the configured trigger tag, SideKick_GC</p>
+<p>&gt; formats the contact and POSTs it into the Light Blue inbound API (lands in</p>
+<p>&gt; the Inbox). Poll interval 5 min–24 h (default 15 min), drip-limited</p>
+<p>&gt; (~1.5 s) between sends.</p>
+<ul>
+<li><strong>New settings page <code>Light Blue</code></strong> (Settings → 🔵 Light Blue): enable toggle, poll interval, trigger-tag dropdown (live GHL tag refresh via the <code>(refresh)</code> sentinel — no separate button), Light Blue API key field with a 🔑 Test button, and a <strong>Test &amp; Send</strong> mapping dry-run/live-send.</li>
+<li><strong>New modules</strong>: <code>lightblue_formatter.py</code> (pure: date skip-past, ASCII clean, UK postcode reformat, address dedup, ShootNotes/ContactNotes concatenation), <code>lightblue_client.py</code> (urllib POST + signed-int response parse), <code>lightblue_poll_state.py</code> (transition ledger keyed <code>contact_id|tag</code>, bootstrap + 90-day prune), <code>gui/lightblue_scheduler.py</code> (QTimer) and <code>gui/tab_lightblue_settings.py</code>.</li>
+<li><strong><code>LightBluePollWorker</code></strong> (<code>gui/workers.py</code>): GHL tag-filter search → ledger diff → format → POST; <code>-4</code> (duplicate) recorded as <code>duplicate</code>, not <code>failed</code>.</li>
+<li><strong>Verified live 2026-09-18</strong>: record imported into Light Blue with correct fields. Param names per Light Blue's reference (<code>ContactNameFirst</code> / <code>ContactNameLast</code>); dedup via <code>ID</code> + <code>Source</code>; <code>ShootType</code> must exactly match a Light Blue shoot-type name. Address fields come from GHL standard fields (street/city/state/postcode), not custom; <code>Distance</code> / <code>Drive Time</code> are read from GHL custom fields.</li>
+<li>Tests: <code>tests/test_lightblue_*.py</code> (6 files, 67 passing).</li>
+</ul>
+<h3>Follow-up fixes (2026-09-18, same day)</h3>
+<ul>
+<li><strong>Fixed: recurring "GHL field mappings went blank" bug (3rd occurrence)</strong>, two independent causes: 1. <code>load_config()</code>'s one-time migration to a dedicated <code>SideKick_GC.ini</code> used to seed the new file with only 3 LLM keys, silently orphaning every other setting (GHL field IDs, templates, mandate link) that lived only in a shared INI. Now seeds a full snapshot from <code>_INI_FIELDS</code> + <code>_GHL_FIELD_PAIRS</code>. 2. A NUL-byte-corrupted script-directory <code>SideKick_GC.ini</code> parsed as zero sections without error and permanently shadowed a good <code>%APPDATA%</code> fallback. <code>find_ini_file()</code> now skips candidates that are empty, mostly-NUL, or missing a <code>[</code> section header.</li>
+<li><strong>New: startup data-integrity check.</strong> <code>startup_integrity.py</code> computes the GHL field-mapping fill ratio on launch; if GHL is configured but the mapping set falls unhealthy after previously being healthy, a blocking "Attention — GHL Settings" dialog fires once (re-arms after recovery) — no more silently running on corrupted config.</li>
+<li>Both instruction files (<code>.ai-instructions.md</code>, <code>.github/instructions/SideKick_GC.instructions.md</code>) updated with the Light Blue integration (§7a) and this incident (§12a).</li>
+</ul>
+<h2>v1.6.0 — GHL Payment Status auto-sync (2026-09-11)</h2>
+<p>&gt; One source of truth for what a client owes: the GHL opportunity custom</p>
+<p>&gt; field <strong>Payment Status</strong> on the Boudoir Production Pipeline. GoCardless</p>
+<p>&gt; is authoritative; the field is recomputed every time SideKick_GC touches</p>
+<p>&gt; a client and written only when the value changed (best-effort, silent —</p>
+<p>&gt; failures log to debug only). GHL picklist migrated additively (old values</p>
+<p>&gt; <code>Paid</code> / <code>Pay Plan Active</code> / <code>Payment Due</code> kept; new vocabulary added:</p>
+<p>&gt; <code>Outstanding</code>, <code>Active</code>, <code>Paused</code>, <code>Failed</code>, <code>Bank Transfer</code>,</p>
+<p>&gt; <code>Refund Due</code>, <code>Paid in Full</code>).</p>
+<p>&gt;</p>
+<p>&gt; Rebuild verified: <code>dist/SideKick_GC.exe</code> (105.9 MB) bundles</p>
+<p>&gt; <code>sidekick_gc.payment_status</code> (exe binary scan).</p>
+<ul>
+<li><strong>New module <code>sidekick_gc/payment_status.py</code></strong>: pure, unit-tested 7-status mapping (<code>compute_payment_status</code>) — precedence: Refund Due → Failed → Paused → Bank Transfer → Outstanding → Active → Paid in Full. Vocabulary + GHL target names (<code>Boudoir Production Pipeline</code>, field <code>Payment Status</code>) live here.</li>
+<li><strong><code>GHLPaymentStatusWorker</code> (<code>gui/workers.py</code>)</strong>: resolves the contact (id or email), finds their latest <code>open</code> opportunity in the production pipeline (pipeline + field ids cached per location), computes the status from <code>PaymentStatusInputs</code>, and PUTs <code>customFields</code> write-on-change. Read shape <code>fieldValue</code> vs write shape <code>field_value</code> handled.</li>
+<li><strong>Trigger points (every client touch)</strong>:</li>
+<li>Client tab statement fetch (<code>_on_stmt_data</code>) — GC mandate + plans path → <code>Active</code> / <code>Paid in Full</code>.</li>
+<li>Client tab bank-payer balance refresh (<code>_on_psa_balance</code>) — no mandate, fresh PSA balance → <code>Bank Transfer</code> / <code>Paid in Full</code>.</li>
+<li>Notifications bank-cancel tag flow (<code>_apply_tags</code>) — cancelled mandate with balance → <code>Outstanding</code>.</li>
+<li>Notifications bank transfer recorded (<code>_on_bank_done</code>) — post-record balance → <code>Bank Transfer</code> / <code>Paid in Full</code> / <code>Refund Due</code> (<code>early_overpayment</code> classification).</li>
+<li><strong>Scope probes</strong>: <code>opportunities.readonly</code> + <code>opportunities.write</code> added to <code>ghl_scopes.py</code>; <code>opportunity_status_sync</code> feature in <code>ghl_features.py</code> (Settings → Test GHL reports it).</li>
+<li><strong>Models</strong>: <code>PaymentStatusInputs</code> + <code>Opportunity</code> dataclasses.</li>
+<li>Known limits: <code>Paused</code> / <code>Failed</code> statuses exist in the mapping but no trigger produces them yet (GC has no paused-mandate state; payment-level failures surface via the Notifications failed-payments flow, not these four triggers). Nightly financials reconciliation stays authoritative.</li>
+</ul>
+<h2>v1.5.1 — Pay 1st ASAP downpayment fix (2026-09-09)</h2>
+<ul>
+<li><strong>Fixed: "Pay 1st ASAP" downpayment rejected with 422 "Validation failed"</strong> on <code>pending_submission</code> mandates. <code>_safe_charge_date()</code> only omitted <code>charge_date</code> when the date was today or in the past; a date that was merely too close (inside the 4-day BACS lead time) was sent to GoCardless as-is and rejected. Now omits <code>charge_date</code> whenever it falls inside the <code>_GC_LEAD_DAYS</code> window, matching <code>_paylines_need_bump</code>'s threshold. (<code>sidekick_gc/cli.py</code>)</li>
+<li><strong>GoCardless error detail surfaced</strong>: HTTP error handling (<code>gocardless_core/client.py</code>) now appends the nested <code>error.errors[0].message</code>/<code>reason</code> when present, so <code>validation_failed</code> responses show the actual field-level reason instead of the generic "Validation failed". <code>CONTRACT.md</code> updated to document the envelope.</li>
+</ul>
+<h2>v1.5.0 — GHL bridge (built 2026-09-08, ready to publish)</h2>
+<p>&gt; Rebuild verified: <code>dist/SideKick_GC.exe</code> (2026-09-08 15:18, 105.9 MB) bundles</p>
+<p>&gt; <code>gocardless_core</code> + <code>ghl_client</code> / <code>ghl_scopes</code> / <code>ghl_features</code>. Confirmed via</p>
+<p>&gt; PyInstaller warn file (no missing core/ghl modules) and exe binary string scan.</p>
+<p>&gt; The prior post-C-lite rebuild warning is resolved.</p>
+<h3>GHL bridge</h3>
+<ul>
+<li><strong>Single GHL client (<code>sidekick_gc/ghl_client.py</code>)</strong>: All ~24 GHL call sites in <code>workers.py</code> now route through one <code>GhlClient</code> (urllib transport, mirrors SideKick_PS <code>ghl_client.py</code>) instead of hand-rolled <code>urllib.request</code> blocks. Retry policy (409x5 / 429x3 with Retry-After / 5xx x3 / network x3, 20s UI budget / 45s bulk sync), per-attempt timeouts, and PII-redacted debug logging via <code>gc_logging</code>.</li>
+<li><strong>Scope diagnostics on the Settings Test button</strong>: The GHL Test button now runs the E01-safe scope probe (<code>ghl_scopes.py</code>) and renders a per-feature OK / BLOCKED / WARN table (<code>ghl_features.py</code>) — a scoped-down GHL key is explained feature-by-feature instead of a raw error.</li>
+<li><strong>Reactive 401/403 self-diagnosis</strong>: GHL worker error signals now append a scope-probe explanation when a call fails with 401/403, telling the user which Private Integration scopes are missing.</li>
+<li><strong>Retry-on-cancel</strong>: GHL retries are cancel-aware (bulk sync worker aborts mid-retry via its stop flag); message sends skip the 409 conflict retry table to avoid duplicate SMS/email.</li>
+</ul>
+<h3>Improvements</h3>
+<ul>
+<li><strong>Bank transfer matching — surname-only transfers no longer hidden</strong>: A transfer whose reference carries only the client's surname (no shoot number) now matches when that surname uniquely identifies one shoot in the archive (<code>score ≥ 0.30</code>). Previously these scored below the <code>0.40</code> threshold, were classified <code>unmatched</code>, ledger-marked and never surfaced — a real payment (e.g. a £500 part-payment) was silently dropped. New <code>unique_surname</code> field on <code>BankTransferCandidate</code>; the auto-record gate now accepts a verified manual payer on a unique-surname match (alongside the existing shoot-digit match). <code>match_bank_transfers.py</code> emits the flag.</li>
+</ul>
+<ul>
+<li><strong>Bank-payer statement flow + phantom GoCardless paylines</strong>: "Open Client" from the Notifications tab now pre-fills the client name immediately and populates the Settlement Statement card for bank payers and manual-payer transfers. A client whose GoCardless mandate exists but has no active subscription is treated as a bank payer. When the PSA holds GoCardless paylines but no live subscription, the statement card offers "Create Subscription" (jumps to Payment Plans with the mandate preloaded) or "Clear GC Lines" (removes the phantom GoCardless DD lines via <code>--clear-method-all</code> and re-reads the PSA).</li>
+</ul>
+<ul>
+<li><strong>PSA order-total fix (OrderGroups31 attribute price)</strong>: Restored the fallback that reads a product <code>price</code> as a direct <code>&lt;item&gt;</code> attribute when the child <code>&lt;Price&gt;</code> tag form is absent. Without it, such albums parsed as zero products and summed only negative extras, producing a negative order total (e.g. −£200) that wrongly marked a client "paid in full" with no statement. Regression test added.</li>
+</ul>
+<ul>
+<li><strong>Open in ProSelect</strong>: New icon button beside "Open in GHL" in the Client tab (ProSelect logo) that opens the client's <code>.psa</code> album in ProSelect, resolving the shoot path when not already cached.</li>
+</ul>
+<ul>
+<li><strong>Open Client crash fix</strong>: Guarded the PSA-balance and GHL-contact fetch threads with <code>isRunning()</code> so a second request no longer replaces a running QThread (which caused a hard crash on "Open Client").</li>
+</ul>
+<ul>
+<li><strong>Bank payer registration</strong>: The auto record+statement chain now adds a manual-payer client to the Bank Payers list (with the post-payment balance). Previously the statement was sent but the client was never registered, so they didn't appear in the list.</li>
+</ul>
+<ul>
+<li><strong>Notifications tab — scrollable + collapsible settings</strong>: The tab now scrolls inside a <code>QScrollArea</code> (the Bank Transfers section was cut off at the bottom on smaller windows), and the enable toggle plus the four settings cards (GHL Tagging, GHL Daily Sync, Xero Weekly Push, Polling Frequency) fold into one collapsible "⚙️ Polling &amp; Sync Settings" card, freeing vertical space for the event tables.</li>
+</ul>
+<ul>
+<li><strong>Settings tab — left menu with scrollable pages</strong>: Settings now uses a left-hand navigation menu (<code>🔑 API</code>, <code>🧾 Billing</code>, <code>📇 GHL</code>, <code>🤖 AI Chat</code>, <code>⚙️ Application</code>) with stacked pages. All API credentials (GoCardless token, GHL API key + location, AI/LLM key) sit together on the API page, and every page scrolls within the tab so fields never compress — groundwork for future settings sub-tabs.</li>
+</ul>
+<ul>
+<li><strong>24h bank transfer poll (settlement detection)</strong>: New Bank Transfers section in the Notifications tab watches the Metro bank feed (GoCardless Bank Account Data) daily and classifies incoming transfers: already-recorded-in-PSA → no action; matches an active GoCardless plan → settlement candidate (confirm-only, preloads the Client tab); no plan but PSA balance outstanding → manual payer (record + updated statement, auto only when the match is verified); part-payment and unmatched transfers surface for review. A checkpoint ledger (<code>bank_poll_state.json</code>) stops re-flagging, a same-day guard prevents double polls, and transfers that cannot be verified because an archive drive is offline stay pending until the next poll.</li>
+</ul>
+<ul>
+<li><strong>Xero &amp; Bank integration gate</strong>: New Settings toggle (<code>XeroBankEnabled</code> INI key). On by default only for the Zoom Photography Studio GHL location; every other location defaults OFF with the Xero Weekly Push group, bank poll controls and Bank Transfers table hidden and their background timers stopped — vendor-ready for generic installs.</li>
+</ul>
+<ul>
+<li><strong>Bank feed 429 handling</strong>: Rate-limited responses now report the reset time (parsed from the <code>X-Ratelimit-Account-Success-Reset</code> header or body) and surface as an explicit error in the poll instead of a silent empty list.</li>
+</ul>
+<ul>
+<li><strong>Nordigen API section + Metro Bank setup wizard</strong>: New <strong>Nordigen Bank Account Data</strong> group on the Settings → 🔑 API page, with a guided wizard (<strong>🏦 Connect Metro Bank</strong>) that walks through the GoCardless Bank Account Data OAuth flow: paste <code>secret_id</code>/<code>secret_key</code> → exchange for a token → open the Metro authorisation link → verify the requisition is linked. The token is written atomically to <code>SideKick_Xero\data\bank_feed_token.json</code> <strong>including the <code>accounts</code> array</strong> (positionally mapped by <code>bank_feed.py</code>), the secrets are saved to the GC credential store plus <code>%APPDATA%\SideKick\bank_feed_secrets.json</code>, and the 90-day consent-expiry date is surfaced on the API page. Existing secrets and consent state are pre-loaded on startup. <strong>Test Connection</strong> verifies the full chain (token refresh → requisition status → account detail) instead of just the access token.</li>
+</ul>
+<ul>
+<li><strong>Settlement statement message</strong>: Client-tab statement body now formats like a compact payment-plan statement, including paid to date, remaining balance, next collection amount/date, settlement deadline, and GoCardless cancellation note before writing to the GHL <code>gc_message</code> field.</li>
+</ul>
+<ul>
+<li><strong>DSA audit cleanup (2026-08-17, 20 findings)</strong>: Typed <code>GCRequestError</code> raises instead of error-dict returns; shared <code>_iter_items</code> pagination helper; typed <code>PaymentCharge</code>, <code>ActiveClientInfo</code>, and nested <code>Mandate</code> in <code>MandateCheckResult</code>; MainWindow takes a single <code>StartupContext</code>; one shared <code>APP_USER_MODEL_ID</code>; <code>GhlFieldMapping</code> dict replaces 22 flat config fields; declarative INI loading table; event-kind state registry in Notifications; request-id guards for mandate search and stats errors; GHL field descriptor table and reopen-kind set in Settings.</li>
+</ul>
+<ul>
+<li><strong>Stale Mandates — Outstanding column</strong>: New <code>Outstanding</code> column (missed money: failed / late-failure / charged-back payments) directly after the checkbox. Orange when money is owed, grey at £0.00 — £0.00 means fully collected and safe to remove.</li>
+</ul>
+<ul>
+<li><strong>Stale Mandates — GoCardless links</strong>: Customer name and Mandate ID render as blue underlined links; double-click opens the GoCardless dashboard customer or mandate page (sandbox-aware).</li>
+</ul>
+<h3>Bug Fixes</h3>
+<ul>
+<li><strong>Suffixed shoot folders matched</strong>: <code>_parse_folder_name</code> in <code>SideKick_Xero/psa_scan.py</code> now accepts shoot folders with trailing suffixes (e.g. <code>P26036P_Inkley_31032026_1636_NO_DISPLAY</code>), which were previously invisible to archive discovery — the bank poll (and the bookkeeping backfill) now finds these orders.</li>
+</ul>
+<ul>
+<li><strong>Crash on tab switch</strong>: <code>GHLFetchTagsWorker</code> was replaced while still running when leaving Notifications/Settings, garbage-collecting the QThread mid-run and aborting the app (<code>QThread: Destroyed while thread is still running</code>). Both tag-fetch sites now skip starting a new worker while one is running.</li>
+</ul>
+<ul>
+<li><strong>Settings loading from stub INI</strong>: An empty <code>SideKick_GC.ini</code> in the app folder shadowed the real settings file, blanking the Settings tab. Removed the shadowing file (settings restored from <code>SideKick_PS.ini</code>).</li>
+</ul>
+<ul>
+<li><strong>Missing keyring dependency</strong>: Launches via <code>C:\Python314</code> silently fell back to an empty credentials field when <code>keyring</code> wasn't installed.</li>
+</ul>
+<ul>
+<li><strong>Launcher dependency check</strong>: <code>SideKick_GC.py</code> now verifies <code>PySide6</code>, <code>keyring</code>, and <code>qrcode</code> before import and offers Install now / Exit when something is missing (no silent auto-install; skipped for frozen builds).</li>
+</ul>
+<ul>
+<li><strong>Settle button crashed on every press</strong>: <code>_on_settle_error</code> was connected but never defined, so <code>_start_settle</code> raised <code>AttributeError</code> at connect time and the manual settlement never ran. Handler added.</li>
+</ul>
+<ul>
+<li><strong>Paid notice sent too early</strong>: The GHL "fully paid" statement-tag retrigger now fires only after the PSA write succeeds (moved out of <code>_on_settle_done</code> into <code>_send_paid_notice</code>, called from the <code>_on_psa_done</code> success branch).</li>
+</ul>
+<ul>
+<li><strong>Automated bank chain dropped its tail</strong>: <code>_on_bank_psa_written</code> and <code>_on_bank_stmt_sent</code> referenced <code>c</code> instead of <code>cand</code> (<code>NameError</code> before <code>worker.start()</code>), silently skipping the statement tag and the payments.db backfill. Fixed to <code>cand</code>.</li>
+</ul>
+<ul>
+<li><strong>Notifications tab layout</strong>: The four settings cards now sit in a 2×2 grid (was a 4-across row that overflowed off-screen), the four time edits are 100 px wide (no more truncated <code>HH:mm</code>), all top-card widgets gained tooltips, and both event tables have minimum heights so the page scrolls instead of compressing.</li>
+</ul>
+<p>---</p>
+<h2>v1.4.1 (2026-05-30)</h2>
+<h3>Bug Fixes</h3>
+<ul>
+<li><strong>Stale mandates — full history read</strong>: <code>list_stale_mandates</code> now paginates through all active mandates using the GoCardless <code>after</code> cursor (was limited to the first 50). Mandates years old are now correctly included.</li>
+<li><strong>Stale mandates — payment history</strong>: Per-mandate payment lookup also paginated; total collected figure is now accurate for clients with many payments.</li>
+</ul>
+<h3>New Features</h3>
+<ul>
+<li><strong>AI Chat — Copy button</strong>: AI response bubbles now show a <code>⎘</code> icon in the top-right corner (Copilot-style). Clicking it copies the response to the clipboard — as CSV if the response contains a markdown table, or plain text otherwise. Button flashes <code>✓</code> green for 1.5 s on success.</li>
+<li><strong>AI Chat — Chat bubble width</strong>: AI and user bubbles now fill the available width (4:1 stretch ratio vs spacer) rather than collapsing to content width.</li>
+</ul>
+<p>---</p>
+<h2>v1.4.0 (2026-05-29)</h2>
+<h3>New Features</h3>
+<ul>
+<li><strong>AI Chat tab</strong>: New tab (Tab 9) with natural-language GoCardless account queries via LLM. Supports OpenAI, OpenRouter, and DeepSeek providers with full multi-provider configuration in Settings.</li>
+<li><strong>10 GoCardless tools</strong>: <code>check_mandate</code>, <code>list_plans</code>, <code>list_payments</code>, <code>list_stale_mandates</code>, <code>list_bank_cancelled</code>, <code>get_stats</code>, <code>create_payment</code>, <code>create_refund</code>, <code>cancel_mandate</code>, <code>create_billing_request</code>.</li>
+<li><strong>Write-action confirmation</strong>: Destructive/write tool calls present a confirmation dialog before executing. Cancel mandate is flagged as irreversible.</li>
+<li><strong>Streaming responses</strong>: AI responses stream token-by-token into the chat bubble in real time.</li>
+<li><strong>Test Connection button</strong>: Settings → AI Chat includes a test button that validates the API key, provider, and model, with clear error messages.</li>
+<li><strong>System prompt editor</strong>: Configurable system prompt in Settings with Reset to Default option. Persists across restarts.</li>
+<li><strong>Suggested question chips</strong>: Four quick-question chips below the chat area for common queries.</li>
+<li><strong>Provider auto-defaults</strong>: Switching provider in Settings auto-populates the correct default model.</li>
+<li><strong>Window size increase</strong>: Main window default size increased to 1310×1040 (min 1130×940) to accommodate the wider AI Chat tab.</li>
+</ul>
+<p>---</p>
+<h2>v1.3.2 (2026-03-19)</h2>
+<h3>New Features</h3>
+<ul>
+<li><strong>Auto-populate Plan Name from Chrome import</strong>: When picking up a client from Chrome, the Payment Plans tab now automatically fills the Plan Name field (if empty) using <code>ShootNo-Surname-GHLID</code>. If the shoot number is not available it falls back to <code>Surname-GHLID</code>. The field is never left blank when any client data is present.</li>
+<li><strong>Shoot Number GHL field mapping</strong>: New "Shoot Number" field-mapping combo in Settings → GHL Custom Fields. Select the GHL custom field that stores the client's shoot/job number; it will be read at contact-fetch time and included in the auto-built plan name.</li>
+<li><strong>Shoot number sourced from GHL</strong>: <code>GHLContactFetchWorker</code> now reads <code>customFieldsValue</code> from the GHL contact API response and extracts the shoot number using the configured field ID, so no manual entry is required.</li>
+</ul>
+<p>---</p>
+<h2>v1.3.1 (2026-03-18)</h2>
+<h3>Code Quality — Analyser Pass (Code Analyzer v3)</h3>
+<ul>
+<li><strong>workers.py</strong>: Replaced 6 <code>__import__()</code> inline calls in <code>GHLSyncAllMandatesWorker.run()</code> with proper <code>urllib.request</code> usage (module already imported at top of method). Score: 0 → 83/100</li>
+<li><strong>workers.py</strong>: Added missing docstrings to all 27 <code>run()</code> methods, 4 <code>on_progress</code> helpers, and 2 <code>stop()</code> methods</li>
+<li><strong>tab_refunds.py</strong>: Added return type annotation (<code>-&gt; int</code>) and docstring to nested <code>score()</code> helper; added docstring to <code>update_config()</code></li>
+<li><strong>settings_dialog.py</strong>: Split 4 long <code>_select_combo_by_data()</code> calls (lines 591–594) to comply with 120-char line limit</li>
+<li><strong>tab_payment_plans.py</strong>: Fixed 2 long lines — extracted <code>items</code> variable in payment methods list and wrapped long <code>setText()</code> f-string</li>
+<li><strong>tab_stats.py</strong>: Fixed import order — moved <code>from datetime import date as _date</code> (was after PySide6 imports) to stdlib section as <code>_date = date</code> alias</li>
+<li><strong>Overall</strong>: Issues reduced from 385 → 356 (−29), average score improved from 74.8 → 79.1/100</li>
+</ul>
+<p>---</p>
+<h2>v1.3.0 (2026-03-18)</h2>
+<h3>GUI Improvements — Active Client Context</h3>
+<ul>
+<li><strong>Active-client banner</strong>: Payment Plans, Payments, and Refunds tabs now display a persistent banner showing the current client (name, email, mandate ID, bank) when a mandate is found on the Client tab</li>
+<li><strong>Unified client flow</strong>: The Client tab is now the single source of truth — finding a mandate automatically propagates full client context to all downstream tabs via a rich <code>mandate_found(dict)</code> signal</li>
+<li><strong>Refunds tab decluttered</strong>: Replaced the standalone "Find Client" search with a collapsible "Manual Search" section (collapsed by default). When an active client is loaded from the Client tab, the search is hidden and payments load automatically</li>
+<li><strong>"Go to Client Tab" button</strong>: When no active client is loaded, the Refunds tab shows a prompt with a button to navigate directly to the Client tab</li>
+<li><strong>Clear Client action</strong>: The existing Clear button on the Client tab now emits a <code>client_cleared</code> signal that resets banners and clears stale data on all downstream tabs</li>
+<li><strong>Fixed duplicate <code>changeEvent</code></strong>: Merged two <code>changeEvent</code> overrides in MainWindow into one (combo popup hiding + minimize-to-tray)</li>
+</ul>
+<h3>New Features</h3>
+<ul>
+<li><strong>Minimize to system tray</strong>: New "Minimize to system tray" checkbox in Settings → Application. When enabled, clicking the minimize button hides the window to the system tray rather than the taskbar, keeping the taskbar clean. Double-click or right-click the tray icon to restore.</li>
+<li><strong>Separated tray behaviours</strong>: "Close to system tray" and "Minimize to system tray" are now independent options — each can be toggled separately for precise control over window behaviour.</li>
+</ul>
+<p>---</p>
+<h2>v1.2.4 (2026-03-17)</h2>
+<h3>New Features</h3>
+<ul>
+<li><strong>Stats Tab</strong>: Full income statistics tab with FY picker (Apr–Mar fiscal years), bar chart, summary cards, and monthly breakdown table</li>
+<li><strong>Compare mode</strong>: Side-by-side bars for current FY vs prior FY with Δ £ / Δ % columns</li>
+<li><strong>Summary cards</strong>: YTD income, monthly avg, best month, YoY growth %, pending debt, bad debt</li>
+<li><strong>Bad debt %</strong>: Bad debt card now shows percentage of YTD income inline (e.g. <code>£1,250.00 (3.2%)</code>)</li>
+<li><strong>Debt tooltips</strong>: Verbose tooltips on pending debt and bad debt cards showing date range and status classifications</li>
+<li><strong>Bad debt classification</strong>: Cancelled payments on subscriptions with a prior failure are counted as bad debt (GoCardless auto-cancels remaining instalments after failure)</li>
+</ul>
+<h3>Security</h3>
+<ul>
+<li><strong>PII redaction in logs</strong>: <code>_redact()</code> applied recursively before any debug/error log write — masks email, name, IBAN, address, tokens</li>
+<li><strong>OS keyring credentials</strong>: GoCardless and GHL tokens now stored in Windows Credential Manager via <code>keyring</code> — base64 JSON fallback for backward compat, auto-migrates on next save</li>
+<li><strong>NTFS file permissions</strong>: <code>icacls</code> restricts credentials file and Logs/ directory to current user only</li>
+<li><strong>Runtime pip removed</strong>: <code>tab_billing_request.py</code> no longer calls <code>pip install</code> at runtime — raises <code>ImportError</code> with helpful message instead</li>
+<li><strong>IPC file relocated</strong>: Moved from shared <code>%TEMP%</code> to user-scoped <code>%APPDATA%\SideKick_GC\navigate.txt</code></li>
+<li><strong>New dependency</strong>: <code>keyring&gt;=24.0</code> added to <code>requirements.txt</code></li>
+</ul>
+<h3>Code Quality</h3>
+<ul>
+<li>Ran Code Analyzer v3 across all 22 Python files (382 issues, avg 74.7/100)</li>
+<li>Moved inline imports to top-level across multiple files</li>
+<li>Added docstrings to <code>models.py</code> properties and <code>tab_stats.py</code> public methods</li>
+<li>Fixed line-length violations in <code>main_window.py</code></li>
+</ul>
+<h3>Chart Fixes</h3>
+<ul>
+<li>Y-axis: clean rounded tick values (power-of-10 ceiling), <code>%.0f</code> format</li>
+<li>Fixed £ symbol rendering as ◆ on Y-axis (Qt <code>asprintf</code> limitation) — removed from format string</li>
+<li>Zero-padding chart margins, minimum height 300px</li>
+</ul>
+<p>---</p>
+<h2>v1.2.3 (2026-03-17)</h2>
+<h3>New Features</h3>
+<ul>
+<li><strong>GHL Daily Sync</strong>: New "GHL Daily Sync" group in Notifications tab — toggle, configurable sync time, and Sync Now button to push all active GoCardless mandate data to GHL custom fields on a daily schedule</li>
+<li><strong>GHL Field Mapping Combos</strong>: Settings now shows a dropdown for each GHL custom field mapping, populated by fetching live fields from GHL — displays field name instead of raw ID; includes <code>(refresh)</code> option to reload the list</li>
+<li><strong>Contact ID Cache</strong>: Daily sync saves a <code>ghl_sync_cache.json</code> in the app data folder mapping mandate IDs to GHL contact IDs — subsequent runs skip the GHL email lookup for already-known contacts, significantly reducing run time</li>
+<li><strong>GHL Sync Worker</strong>: New <code>GHLSyncAllMandatesWorker</code> — pages all active GC mandates, fetches customer email and payment summary per mandate, looks up GHL contact by email (cache-first), and pushes 4 configured custom fields (outstanding balance, plan end date, mandate ID, payments progress)</li>
+<li><strong>Cancel Tag refresh in dropdown</strong>: Refresh button removed from Notifications tag row; <code>(refresh)</code> item added directly to the cancel tag combo, consistent with the template combos in Settings</li>
+</ul>
+<h3>Improvements</h3>
+<ul>
+<li><strong>Settings layout</strong>: Application group moved to left column; GHL Integration, Field Mapping, Notification Templates, and stretch fill right column — gives GHL mapping more vertical room</li>
+<li><strong>Input heights</strong>: All <code>QLineEdit</code> and <code>QComboBox</code> inputs set to <code>setFixedHeight(24)</code> for a compact, consistent look; global stylesheet padding reduced from <code>6px 10px</code> to <code>2px 8px</code></li>
+<li><strong>Grammarly blocked</strong>: <code>WA_InputMethodEnabled = False</code> set on MainWindow to prevent Grammarly from intercepting text fields</li>
+<li><strong>GHL field names persisted</strong>: Selected GHL field names stored in config and INI (<code>GHLBalanceFieldName</code>, <code>GHLPlanEndFieldName</code>, <code>GHLMandateIDFieldName</code>, <code>GHLPaymentsProgressFieldName</code>) so combos reload with display names instead of raw IDs</li>
+</ul>
+<h3>Config</h3>
+<ul>
+<li><code>ghl_sync_enabled: bool</code>, <code>ghl_sync_time: str</code> — new sync schedule settings</li>
+<li><code>ghl_balance_field_name</code>, <code>ghl_plan_end_field_name</code>, <code>ghl_mandate_id_field_name</code>, <code>ghl_payments_progress_field_name</code> — display names for mapped GHL fields</li>
+<li><code>ghl_contact_id</code> added to <code>CancelledMandate</code> model for contact ID caching on bank-cancel events</li>
+</ul>
+<h3>Workers</h3>
+<ul>
+<li><code>GHLSyncAllMandatesWorker</code> — daily sync of all active mandates to GHL; signals: <code>progress(int,int,str)</code>, <code>finished(int,int,int)</code>, <code>error(str)</code>, <code>contact_cached(str,str)</code></li>
+<li><code>GHLCustomFieldsWorker</code> — fetches <code>/locations/{id}/customFields</code> for populating field mapping combos</li>
+</ul>
+<p>---</p>
+<h2>v1.2.2 (2026-03-13) — bundled in SideKick_PS v3.0.7</h2>
+<h3>New Features</h3>
+<ul>
+<li><strong>Stale-date detection in <code>--silent</code> mode</strong>: Before submitting a plan, the CLI now checks whether any payline date falls within the GoCardless BACS lead-time window (&lt; 4 days away) or is already in the past — a common situation when the GoCardless submission was delayed after the plan was set up in ProSelect</li>
+<li><strong><code>DATES_STALE</code> response</strong>: When stale dates are detected without <code>--bump-months</code>, the CLI emits <code>DATES_STALE|&lt;bumped_paylines&gt;|&lt;first_new_date&gt;|&lt;last_new_date&gt;</code> instead of failing, giving the calling application a chance to ask the user before proceeding</li>
+<li><strong><code>--bump-months N</code> flag</strong>: Shifts all payline dates forward by N calendar months (same day-of-month, same amounts) before plan creation — used on re-submission after user confirms the date bump</li>
+<li><strong>AHK date-bump dialog</strong>: SideKick PS now intercepts <code>DATES_STALE|</code>, shows the proposed new date range, and asks _"Shift all payments forward by one month?"_ — prioritising client affordability over exact payment dates</li>
+</ul>
+<p>---</p>
+<h2>v1.2.1 (2026-03-11)</h2>
+<h3>New Features</h3>
+<ul>
+<li><strong>Single payment via <code>create_payment</code></strong>: When <code>--silent</code> mode receives only 1 payline, it creates a one-off payment using the Payments API instead of an instalment schedule — more appropriate for single charges and avoids GoCardless schedule overhead</li>
+</ul>
+<h3>Improvements</h3>
+<ul>
+<li><strong><code>--check-mandate-by-name</code> extended output</strong>: Response now includes <code>customer_name</code> and <code>customer_email</code> fields (positions 6 and 7) so the calling application can display a confirmation dialog when matching by name instead of email</li>
+</ul>
+<p>---</p>
+<h2>v1.2.0 (2026-03-09)</h2>
+<h3>New Features</h3>
+<ul>
+<li><strong><code>--silent</code> CLI flag</strong>: Create payment plans headlessly without launching the GUI — requires <code>--mandate-id</code>, <code>--paylines</code>, and <code>--plan-name</code>; parses paylines, applies statement label prefix, creates the instalment schedule, writes result file, and exits</li>
+<li><strong><code>--cancel-plans</code> CLI command</strong>: Cancel all active plans on a mandate — handles subscriptions, instalment schedules, and pending one-off payments (deposits)</li>
+<li><strong><code>cancel_mandate_plans()</code> API function</strong>: Iterates all plans on a mandate and cancels active subscriptions, instalment schedules, and pending/submitted one-off payments</li>
+<li><strong><code>cancel_payment()</code> API function</strong>: Cancel an individual pending payment by ID</li>
+<li><strong><code>cancel_instalment_schedule()</code> API function</strong>: Cancel an instalment schedule by ID</li>
+</ul>
+<h3>Improvements</h3>
+<ul>
+<li><strong><code>has_cli_command()</code> recognises <code>--silent</code></strong>: Silent mode with <code>--mandate-id</code> is now treated as a CLI command, bypassing GUI launch</li>
+</ul>
+<p>---</p>
+<h2>v1.1.1 (2026-03-05)</h2>
+<h3>New Features</h3>
+<ul>
+<li><strong>Close to Tray option</strong>: New "Close to system tray" checkbox in Settings — when enabled, clicking X hides the window to the system tray; when disabled (default), X minimises to the taskbar</li>
+<li><strong>Toast on Mandate Cancellation</strong>: New "Show Windows notification on mandate cancellation" checkbox in Settings — displays a Windows toast via the system tray when polling detects bank-cancelled mandates (enabled by default)</li>
+<li><strong>Exit Program button</strong>: Red "⏻ Exit" button in Settings to fully quit the application with a confirmation warning if notification polling is active</li>
+<li><strong>Polling-active exit warning</strong>: Exiting via Settings or tray menu now warns if notification polling is running, reminding that SideKick needs to stay running in the background for polling to work</li>
+</ul>
+<h3>Improvements</h3>
+<ul>
+<li><strong>X button behaviour</strong>: Clicking the window X button now minimises to taskbar (or hides to tray if enabled) instead of closing — the app always stays running</li>
+<li><strong>Desktop Shortcut button</strong>: Renamed to "Desktop Shortcut" with the SideKick_GC app icon instead of emoji</li>
+<li><strong>Smaller checkboxes &amp; radio buttons</strong>: Reduced indicator size to 14px and font to 9pt with 6px spacing for a cleaner, more compact look</li>
+<li><strong>Settings layout</strong>: Bottom-justified Desktop Shortcut and Exit buttons on the same row with matching height</li>
+</ul>
+<p>---</p>
+<h2>v1.1.0 (2026-03-04)</h2>
+<h3>New Features</h3>
+<ul>
+<li><strong>Payments Tab</strong>: New "💷 Payments" tab with two modes — single payments and subscriptions — mirroring GoCardless dashboard functionality</li>
+<li><strong>Single Payments</strong>: Create one-off payments against an active mandate with amount, charge date, description, reference, and metadata</li>
+<li><strong>Subscriptions</strong>: Create recurring open-ended subscriptions with configurable frequency (weekly/monthly/yearly), interval, day-of-month, and end condition (indefinite / fixed count / end date)</li>
+<li><strong>Subscription API</strong>: New <code>create_subscription()</code> and <code>cancel_subscription()</code> API functions calling GoCardless <code>/subscriptions</code> endpoint</li>
+<li><strong>Inline Prefix Label</strong>: Plan name and subscription name inputs show the Statement Label prefix inline as a non-editable label, so the user sees the full bank statement name without being able to edit the prefix (configured in Settings)</li>
+</ul>
+<h3>Improvements</h3>
+<ul>
+<li><strong>Tab Layout</strong>: Payments tab inserted at index 2 between Payment Plans and Stale Mandates; all tab indices and <code>--gui</code> shortcuts updated</li>
+<li><strong>Mandate Forwarding</strong>: Client tab mandate ID now forwarded to both Payment Plans and Payments tabs automatically</li>
+<li><strong>Config Propagation</strong>: Settings changes propagated to the new Payments tab alongside all existing tabs</li>
+</ul>
+<h3>Models</h3>
+<ul>
+<li><code>SubscriptionResult</code> — result of creating a recurring subscription</li>
+<li><code>CancelSubscriptionResult</code> — result of cancelling a subscription</li>
+</ul>
+<h3>Workers</h3>
+<ul>
+<li><code>CreateSinglePaymentWorker</code> — background thread for one-off payment creation</li>
+<li><code>CreateSubscriptionWorker</code> — background thread for subscription creation</li>
+<li><code>CancelSubscriptionWorker</code> — background thread for subscription cancellation</li>
+</ul>
+<p>---</p>
+<h2>v1.0.0 (2026-03-01)</h2>
+<h3>Initial Release</h3>
+<ul>
+<li><strong>CLI</strong>: Full GoCardless CLI with 100% parity to legacy <code>gocardless_api.py</code> commands</li>
+<li><strong>GUI</strong>: PySide6 dark-themed tabbed interface with Client, Payment Plans, Stale Mandates, Notifications, Settings, and About tabs</li>
+<li><strong>Client Tab</strong>: GHL contact search, Chrome import, manual entry, mandate lookup with QR code billing request flow</li>
+<li><strong>Payment Plans Tab</strong>: Instalment schedule creation with deposit, rounding control, recurring intervals, and live schedule preview table</li>
+<li><strong>Stale Mandates Tab</strong>: Find and batch-cancel stale or empty mandates with progress reporting</li>
+<li><strong>Notifications Tab</strong>: Background polling for bank-cancelled mandates with GHL tag auto-apply</li>
+<li><strong>Settings Tab</strong>: GoCardless token management, GHL integration, email/SMS template selection, statement label, currency</li>
+<li><strong>System Tray</strong>: Minimize to tray with context menu (Show, Settings, Restart, Exit)</li>
+<li><strong>CLI Injection</strong>: Full <code>--client-email</code>, <code>--client-name</code>, <code>--balance</code>, <code>--gui TAB</code> argument support for external caller integration</li>
+<li><strong>Result File</strong>: <code>--result-file</code> writes payline JSON for ProSelect payment method injection</li>
+</ul>
+</main>
+</body>
+</html>
