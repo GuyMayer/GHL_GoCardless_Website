@@ -574,6 +574,28 @@ transactions settle.</p>
   sending mandate setup notifications from the Client tab. Select
   <strong>(refresh)</strong> to load available templates from GHL.</li>
 </ul>
+<h3>🔁 Lead Flow</h3>
+<p>Bridges bookings from a separate <strong>Lead Flow</strong> GHL account into your
+primary account. When a contact in the Lead Flow account reaches a chosen
+pipeline stage, SideKick_GC copies them across — contact, guard tag, notes,
+opportunity and calendar appointment.</p>
+<ul>
+<li><strong>Enable Lead Flow sync</strong> — turns the bridge on. There is also a master
+  <strong>Sync Lead Flow</strong> switch on the <strong>⚙️ Application</strong> page; both must be on
+  for the poll to run.</li>
+<li><strong>Poll every</strong> — how often the poller checks the Lead Flow account for
+  newly-triggered contacts (5–1440 minutes).</li>
+<li><strong>▶ Poll now</strong> — run one poll immediately, without waiting for the timer.</li>
+<li><strong>🕘 Recent clients</strong> — show the last clients the poller read and their
+  transfer status.</li>
+</ul>
+<p><strong>SOURCE (Lead Flow account)</strong> — the pipeline and stage that triggers a
+transfer.</p>
+<p><strong>DEST (primary account)</strong> — the pipeline, stage and calendar the
+appointment is created in, plus the <strong>Guard tag</strong> added to every bridged
+contact so automations can recognise them.</p>
+<p><strong>Lead Flow API Token</strong> — paste the Lead Flow <strong>PIT token</strong> and click
+<strong>🔑 Test</strong> to verify it (401/403 = fail; anything else = pass).</p>
 <h3>� Set Up GHL Tags &amp; Fields</h3>
 <p>New to SideKick_GC? This wizard does the GoHighLevel setup for you.</p>
 <ol>

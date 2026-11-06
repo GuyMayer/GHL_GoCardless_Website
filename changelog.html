@@ -66,6 +66,10 @@
 </div>
 <main>
 <h1>SideKick_GC Changelog</h1>
+<h2>Unreleased (2026-11-05)</h2>
+<ul>
+<li><strong>New: 2-minute boot delay.</strong> After a reboot SideKick_GC waits two minutes before launching the GUI so it does not spike the CPU alongside every other startup app. CLI commands are unaffected.</li>
+</ul>
 <h2>1.13.0 (2026-11-04)</h2>
 <ul>
 <li><strong>Fix: settings silently lost on customer machines.</strong> Every settings save handler swallowed write errors, and compiled builds searched the exe folder for <code>SideKick_GC.ini</code> before <code>%APPDATA%</code> — so a customer's edit could be written to a file that was never re-read, or fail on a read-only install folder, with no error shown. Compiled builds now read and write <code>%APPDATA%\SideKick_GC\SideKick_GC.ini</code> only; an INI found next to the exe is imported once, then archived as <code>.stale-&lt;timestamp&gt;</code>. Every save failure now logs and shows a one-shot warning.</li>
